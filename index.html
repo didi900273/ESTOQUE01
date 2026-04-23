@@ -273,9 +273,17 @@
         <div class="form-group">
           <label class="form-label">Quantidade Total *</label>
           <input class="form-control" type="number" id="item-qtd" placeholder="0" min="0"/></div>
-        <div class="form-group">
-          <label class="form-label">Unidade</label>
-          <input class="form-control" id="item-unidade" placeholder="sacos, kg, m²..."/></div>
+        <div class="campo-grupo">
+    <label for="unidade">Unidade de Medida:</label>
+    <select id="unidade" name="unidade" class="estilo-select">
+        <option value="un">Unidade (UN)</option>
+        <option value="kg">Quilograma (KG)</option>
+        <option value="mts">Metros (MTS)</option>
+        <option value="m2">Metro Quadrado (M2)</option>
+        <option value="cx">Caixa (CX)</option>
+        <option value="lt">Litro (LT)</option>
+    </select>
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label">Saldo Mínimo (alerta)</label>
