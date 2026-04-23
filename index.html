@@ -24,7 +24,10 @@
         <div class="setup-step">
           <div class="setup-step-num">1</div>
           <div class="setup-step-text">
-            Aceda a <a href="https://jsonbin.io" target="_blank">jsonbin.io</a> e crie uma conta gratuita.
+            Aceda a 
+            <a href="https://jsonbin.io" target="_blank">
+              jsonbin.io</a>
+               e crie uma conta gratuita.
           </div>
         </div>
         <div class="setup-step">
@@ -69,7 +72,8 @@
 
 <!-- ══ LOADING ══ -->
 <div class="loading-overlay" id="loading">
-  <div class="loading-spinner"></div>
+  <div class="loading-spinner">
+  </div>
 </div>
 
 <!-- ══ APP ══ -->
@@ -79,11 +83,14 @@
     <div class="logo">
       <div class="logo-title">⚡ ESTOQUE ELETROOGAURA⚡</div>
       <div class="logo-sub">Gestão de Estoque</div>
-      <div class="logo-sync"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">Sincronizado</span></div>
+      <div class="logo-sync">
+        <div class="sync-dot" id="sync-dot"></div>
+        <span id="sync-label">Sincronizado</span>
+      </div>
     </div>
     <nav>
       <div class="nav-section">Principal</div>
-      <a class="nav-item" href="#dashboard"><span class="icon">📊</span> Dashboard</a>
+      <a class="nav-item" href="#dashboard"><span class="icon">📊</span><Emb></Emb>statística</a>
       <div class="nav-section">Gestão</div>
       <a class="nav-item" href="#estoque"><span class="icon">📦</span> Estoque</a>
       <a class="nav-item" href="#obras"><span class="icon">🏗️</span> Obras</a>
@@ -155,7 +162,18 @@
             <div class="search-box"><span>🔍</span><input type="text" placeholder="Pesquisar..." id="search-estoque" oninput="renderEstoque()"/></div>
           </div>
           <table>
-            <thead><tr><th>#</th><th>Nome do Item</th><th>Categoria</th><th>Total</th><th>Reservada</th><th>Saldo</th><th>Disponibilidade</th><th>Ações</th></tr></thead>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nome do Item</th>
+                <th>Categoria</th>
+                <th>Total</th>
+                <th>Reservada</th>
+                <th>Saldo</th>
+                <th>Disponibilidade</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
             <tbody id="tbody-estoque"></tbody>
           </table>
         </div>
@@ -164,9 +182,19 @@
       <!-- OBRAS -->
       <div class="page" id="page-obras">
         <div class="table-wrap">
-          <div class="table-header"><div class="table-title">Cadastro de Obras</div></div>
+          <div class="table-header">
+            <div class="table-title">Cadastro de Obras</div>
+          </div>
           <table>
-            <thead><tr><th>#</th><th>Local da Obra</th><th>Responsável</th><th>Status</th><th>Ações</th></tr></thead>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Local da Obra</th>
+                <th>Responsável</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
             <tbody id="tbody-obras"></tbody>
           </table>
         </div>
@@ -177,10 +205,22 @@
         <div class="table-wrap">
           <div class="table-header">
             <div class="table-title">Histórico de Movimentações</div>
-            <div class="search-box"><span>🔍</span><input type="text" placeholder="Pesquisar..." id="search-movs" oninput="renderMovs()"/></div>
+            <div class="search-box">
+              <span>🔍</span>
+              <input type="text" placeholder="Pesquisar..." id="search-movs" oninput="renderMovs()"/>
+            </div>
           </div>
           <table>
-            <thead><tr><th>Data</th><th>Item</th><th>Qtd</th><th>Tipo</th><th>Obra</th><th>Funcionário</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Item</th>
+                <th>Qtd</th>
+                <th>Tipo</th>
+                <th>Obra</th>
+                <th>Funcionário</th>
+              </tr>
+            </thead>
             <tbody id="tbody-movs"></tbody>
           </table>
         </div>
@@ -189,10 +229,20 @@
       <!-- FUNCIONÁRIOS -->
       <div class="page" id="page-funcionarios">
         <div class="table-wrap">
-          <div class="table-header"><div class="table-title">Cadastro de Funcionários</div></div>
+          <div class="table-header">
+            <div class="table-title">Cadastro de Funcionários</div>
+          </div>
           <table>
-            <thead><tr><th>#</th><th>Nome</th><th>Cargo / Função</th><th>Ações</th></tr></thead>
-            <tbody id="tbody-funcs"></tbody>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nome</th>
+                <th>Cargo / Função</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-funcs">
+            </tbody>
           </table>
         </div>
       </div>
@@ -205,18 +255,31 @@
 
 <div class="modal-overlay" id="modal-item">
   <div class="modal">
-    <div class="modal-top"><div class="modal-title" id="modal-item-title">Novo Item</div><button class="btn-icon" onclick="closeModal('modal-item')">✕</button></div>
+    <div class="modal-top">
+      <div class="modal-title" id="modal-item-title">Novo Item</div>
+      <button class="btn-icon" onclick="closeModal('modal-item')">✕</button>
+    </div>
     <div class="modal-body">
       <input type="hidden" id="item-id"/>
       <div class="grid-2">
-        <div class="form-group"><label class="form-label">Nome do Item *</label><input class="form-control" id="item-nome" placeholder="Ex: Cimento CP-II"/></div>
-        <div class="form-group"><label class="form-label">Categoria *</label><input class="form-control" id="item-cat" placeholder="Ex: Materiais Básicos"/></div>
+        <div class="form-group">
+          <label class="form-label">Nome do Item *</label>
+          <input class="form-control" id="item-nome" placeholder="Ex: Cimento CP-II"/></div>
+        <div class="form-group">
+          <label class="form-label">Categoria *</label>
+          <input class="form-control" id="item-cat" placeholder="Ex: Materiais Básicos"/></div>
       </div>
       <div class="grid-2">
-        <div class="form-group"><label class="form-label">Quantidade Total *</label><input class="form-control" type="number" id="item-qtd" placeholder="0" min="0"/></div>
-        <div class="form-group"><label class="form-label">Unidade</label><input class="form-control" id="item-unidade" placeholder="sacos, kg, m²..."/></div>
+        <div class="form-group">
+          <label class="form-label">Quantidade Total *</label>
+          <input class="form-control" type="number" id="item-qtd" placeholder="0" min="0"/></div>
+        <div class="form-group">
+          <label class="form-label">Unidade</label>
+          <input class="form-control" id="item-unidade" placeholder="sacos, kg, m²..."/></div>
       </div>
-      <div class="form-group"><label class="form-label">Saldo Mínimo (alerta)</label><input class="form-control" type="number" id="item-minimo" placeholder="Ex: 50" min="0"/></div>
+      <div class="form-group">
+        <label class="form-label">Saldo Mínimo (alerta)</label>
+        <input class="form-control" type="number" id="item-minimo" placeholder="Ex: 50" min="0"/></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-item')">Cancelar</button>
@@ -227,16 +290,34 @@
 
 <div class="modal-overlay" id="modal-reserva">
   <div class="modal">
-    <div class="modal-top"><div class="modal-title">📋 Reservar Material</div><button class="btn-icon" onclick="closeModal('modal-reserva')">✕</button></div>
+    <div class="modal-top">
+      <div class="modal-title">📋 Reservar Material</div>
+      <button class="btn-icon" onclick="closeModal('modal-reserva')">✕</button>
+    </div>
     <div class="modal-body">
       <input type="hidden" id="reserva-item-id"/>
-      <div class="form-group"><label class="form-label">Item</label><input class="form-control" id="reserva-item-nome" readonly/></div>
-      <div class="grid-2">
-        <div class="form-group"><label class="form-label">Saldo Disponível</label><input class="form-control" id="reserva-saldo" readonly/></div>
-        <div class="form-group"><label class="form-label">Qtd a Reservar *</label><input class="form-control" type="number" id="reserva-qtd" placeholder="0" min="1"/></div>
+      <div class="form-group">
+        <label class="form-label">Item</label>
+        <input class="form-control" id="reserva-item-nome" readonly/>
       </div>
-      <div class="form-group"><label class="form-label">Obra *</label><select class="form-control" id="reserva-obra"></select></div>
-      <div class="form-group"><label class="form-label">Funcionário *</label><select class="form-control" id="reserva-func"></select></div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Saldo Disponível</label>
+          <input class="form-control" id="reserva-saldo" readonly/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Qtd a Reservar *</label>
+          <input class="form-control" type="number" id="reserva-qtd" placeholder="0" min="1"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Obra *</label>
+        <select class="form-control" id="reserva-obra"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Funcionário *</label>
+        <select class="form-control" id="reserva-func"></select>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-reserva')">Cancelar</button>
@@ -247,16 +328,34 @@
 
 <div class="modal-overlay" id="modal-saida">
   <div class="modal">
-    <div class="modal-top"><div class="modal-title">🚚 Registar Saída</div><button class="btn-icon" onclick="closeModal('modal-saida')">✕</button></div>
+    <div class="modal-top">
+      <div class="modal-title">🚚 Registar Saída</div>
+      <button class="btn-icon" onclick="closeModal('modal-saida')">✕</button>
+    </div>
     <div class="modal-body">
       <input type="hidden" id="saida-item-id"/>
-      <div class="form-group"><label class="form-label">Item</label><input class="form-control" id="saida-item-nome" readonly/></div>
-      <div class="grid-2">
-        <div class="form-group"><label class="form-label">Total Atual</label><input class="form-control" id="saida-total" readonly/></div>
-        <div class="form-group"><label class="form-label">Quantidade de Saída *</label><input class="form-control" type="number" id="saida-qtd" placeholder="0" min="1"/></div>
+      <div class="form-group">
+        <label class="form-label">Item</label>
+        <input class="form-control" id="saida-item-nome" readonly/>
       </div>
-      <div class="form-group"><label class="form-label">Obra *</label><select class="form-control" id="saida-obra"></select></div>
-      <div class="form-group"><label class="form-label">Quem Levou *</label><select class="form-control" id="saida-func"></select></div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Total Atual</label>
+          <input class="form-control" id="saida-total" readonly/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quantidade de Saída *</label>
+          <input class="form-control" type="number" id="saida-qtd" placeholder="0" min="1"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Obra *</label>
+        <select class="form-control" id="saida-obra"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Quem Levou *</label>
+        <select class="form-control" id="saida-func"></select>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-saida')">Cancelar</button>
