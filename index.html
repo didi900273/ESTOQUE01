@@ -3,12 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ELETROGUARA 67 - Gestão de Estoque</title>
+    <title>ELETROGUARA 67 - Gestão</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <div id="loading">Carregando dados...</div>
+    <div id="loading" class="loading-overlay">
+        <div class="spinner"></div>
+        <p>Sincronizando com a nuvem...</p>
+    </div>
+
+    <div id="setup-screen" style="display:none">
+        <div class="setup-box">
+            <h2>Configuração Inicial</h2>
+            <input type="text" id="api-key" placeholder="Sua API Key do JSONBin">
+            <input type="text" id="bin-id" placeholder="Seu Bin ID">
+            <button class="btn-primary" onclick="saveConfig()">Entrar no Sistema</button>
+        </div>
+    </div>
 
     <div id="app-interface" style="display:none">
         <aside class="sidebar">
@@ -16,15 +28,15 @@
             <nav>
                 <button onclick="showTab('estoque')">📦 Estoque</button>
                 <button onclick="showTab('movimentacoes')">🔄 Movimentações</button>
-                <button onclick="reconfig()" class="btn-sec">⚙️ Reconfigurar</button>
+                <button onclick="reconfig()" class="btn-sec">⚙️ Sair/Trocar ID</button>
             </nav>
         </aside>
 
         <main class="main-content">
             <section id="tab-estoque" class="tab-content active">
                 <header class="tab-header">
-                    <h2>Inventário de Materiais</h2>
-                    <button class="btn-primary" onclick="openModal('modal-item')">+ Novo Item</button>
+                    <h2>Inventário</h2>
+                    <button class="btn-primary" onclick="openModal('modal-item')">+ Novo Material</button>
                 </header>
                 <div class="table-container">
                     <table>
@@ -32,8 +44,8 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Material</th>
-                                <th>Categoria</th>
-                                <th>Unidade</th> <th>Qtd. Atual</th>
+                                <th>Unidade</th>
+                                <th>Qtd. Atual</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
@@ -44,8 +56,8 @@
 
             <section id="tab-movimentacoes" class="tab-content">
                 <header class="tab-header">
-                    <h2>Histórico de Movimentações</h2>
-                    <button class="btn-primary" onclick="openModal('modal-mov')">+ Nova Movimentação</button>
+                    <h2>Histórico</h2>
+                    <button class="btn-primary" onclick="openModal('modal-mov')">+ Nova Saída/Entrada</button>
                 </header>
                 <div class="table-container">
                     <table>
@@ -55,7 +67,8 @@
                                 <th>Item</th>
                                 <th>Tipo</th>
                                 <th>Qtd.</th>
-                                <th>Unidade</th> </tr>
+                                <th>Unidade</th>
+                            </tr>
                         </thead>
                         <tbody id="tbody-movs"></tbody>
                     </table>
@@ -66,22 +79,20 @@
 
     <div id="modal-item" class="modal-overlay">
         <div class="modal">
-            <h3>Cadastrar Novo Material</h3>
+            <h3>Cadastrar Material</h3>
             <div class="campo-grupo">
-                <label>Nome do Material:</label>
-                <input type="text" id="item-nome" placeholder="Ex: Cabo Flexível 2.5mm">
+                <label>Nome:</label>
+                <input type="text" id="item-nome">
             </div>
             <div class="campo-grupo">
-                <label>Unidade de Medida:</label>
+                <label>Unidade:</label>
                 <select id="item-unidade" class="estilo-select">
                     <option value="un">Unidade (UN)</option>
                     <option value="kg">Quilograma (KG)</option>
                     <option value="mts">Metros (MTS)</option>
                     <option value="cm">Centímetros (CM)</option>
-                    <option value="mm2">Milímetros Quadrados (mm²)</option>
-                    <option value="m2">Metro Quadrado (M2)</option>
+                    <option value="mm2">mm²</option>
                     <option value="cx">Caixa (CX)</option>
-                    <option value="lt">Litro (LT)</option>
                 </select>
             </div>
             <div class="modal-btns">
@@ -93,27 +104,21 @@
 
     <div id="modal-mov" class="modal-overlay">
         <div class="modal">
-            <h3>Registrar Entrada/Saída</h3>
+            <h3>Movimentar Estoque</h3>
             <div class="campo-grupo">
-                <label>Selecione o Item:</label>
+                <label>Item:</label>
                 <select id="mov-item-select" class="estilo-select"></select>
+            </div>
+            <div class="campo-grupo">
+                <label>Tipo:</label>
+                <select id="mov-tipo" class="estilo-select">
+                    <option value="entrada">Entrada (+)</option>
+                    <option value="saida">Saída (-)</option>
+                </select>
             </div>
             <div class="campo-grupo">
                 <label>Quantidade:</label>
                 <input type="number" id="mov-qtd">
-            </div>
-            <div class="campo-grupo">
-                <label>Unidade Usada:</label>
-                <select id="mov-unidade" class="estilo-select">
-                    <option value="un">Unidade (UN)</option>
-                    <option value="kg">Quilograma (KG)</option>
-                    <option value="mts">Metros (MTS)</option>
-                    <option value="cm">Centímetros (CM)</option>
-                    <option value="mm2">Milímetros Quadrados (mm²)</option>
-                    <option value="m2">Metro Quadrado (M2)</option>
-                    <option value="cx">Caixa (CX)</option>
-                    <option value="lt">Litro (LT)</option>
-                </select>
             </div>
             <div class="modal-btns">
                 <button onclick="closeModal('modal-mov')">Cancelar</button>
