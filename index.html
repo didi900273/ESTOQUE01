@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ELETROGUARA 67</title>
+  <title>Estoque Eletroguara</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -159,7 +159,9 @@
         <div class="table-wrap">
           <div class="table-header">
             <div class="table-title">Inventário de Materiais</div>
-            <div class="search-box"><span>🔍</span><input type="text" placeholder="Pesquisar..." id="search-estoque" oninput="renderEstoque()"/></div>
+            <div class="search-box">
+              <span>🔍</span>
+              <input type="text" placeholder="Pesquisar..." id="search-estoque" oninput="renderEstoque()"/></div>
           </div>
           <table>
             <thead>
@@ -273,16 +275,9 @@
         <div class="form-group">
           <label class="form-label">Quantidade Total *</label>
           <input class="form-control" type="number" id="item-qtd" placeholder="0" min="0"/></div>
-        <div class="campo-grupo">
-    <label for="unidade">Unidade de Medida:</label>
-    <select id="unidade" name="unidade" class="estilo-select">
-        <option value="un">Unidade (UN)</option>
-        <option value="kg">Quilograma (KG)</option>
-        <option value="mts">Metros (MTS)</option>
-        <option value="m2">Metro Quadrado (M2)</option>
-        <option value="cx">Caixa (CX)</option>
-        <option value="lt">Litro (LT)</option>
-    </select>
+        <div class="form-group">
+          <label class="form-label">Unidade</label>
+          <input class="form-control" id="item-unidade" placeholder="sacos, kg, m²..."/>
         </div>
       </div>
       <div class="form-group">
