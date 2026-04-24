@@ -3,118 +3,61 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Estoque Eletroguara</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>EstoqueObras — Gestão de Materiais</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    .share-panel {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px 22px; margin-bottom: 18px;
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    }
+    .share-panel-text { flex: 1; min-width: 200px; }
+    .share-panel-title { font-family: var(--fd); font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .share-panel-sub { font-size: 12px; color: var(--muted); line-height: 1.6; }
+    .share-panel-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    #import-input { display: none; }
+    .export-box {
+      background: #0a0d14; border: 1px solid var(--border); border-radius: 8px;
+      padding: 14px 16px; font-family: monospace; font-size: 11px; color: #8be08b;
+      max-height: 200px; overflow-y: auto; word-break: break-all;
+      line-height: 1.6; user-select: all;
+    }
+    .modal-wide .modal { width: 600px; }
+  </style>
 </head>
 <body>
 
-<!-- ══ TELA DE CONFIGURAÇÃO (primeira vez) ══ -->
-<div id="setup-screen">
-  <div class="setup-box">
-    <div class="setup-top">
-      <div class="setup-logo">⚡ CHAVE PARA LOGIN  </div>
-      <div class="setup-title">Configuração inicial</div>
-      <div class="setup-desc">Para que o sistema seja 
-        <strong>partilhado</strong>
-         entre você e o outros funcionarios, os dados ficam guardados na nuvem.<br>
-         Siga os 3 passos abaixo — para entrar.</div>
-    </div>
-    <div class="setup-body">
-      <div class="setup-steps">
-        <div class="setup-step">
-          <div class="setup-step-num">1</div>
-          <div class="setup-step-text">
-            Aceda a 
-            <a href="https://jsonbin.io" target="_blank">
-              jsonbin.io</a>
-               e crie uma conta gratuita.
-          </div>
-        </div>
-        <div class="setup-step">
-          <div class="setup-step-num">2</div>
-          <div class="setup-step-text">
-            No painel, vá em <strong>
-              API Keys → Create Access Key</strong>
-               e copie a chave que começa com <code>
-                $2a$10$3vNPatmkURPA4dZ3Gtcmaed8Qx5kdV77pYMaJha7BdFPHvUwp6El6
-                BIN:ID
-                69ea7465aaba8821972ea655 
-              </code>
-          </div>
-        </div>
-        <div class="setup-step">
-          <div class="setup-step-num">3</div>
-          <div class="setup-step-text">
-            Cole a chave abaixo e clique em <strong>
-              Criar e Ligar</strong>
-          </div>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">🔑 API Key do JSONBin</label>
-        <input class="form-control" id="setup-key" placeholder="$2b$10$xxxxxxxxxxxxxxxxxxxxxxx" style="font-family:monospace;font-size:13px;"/>
-      </div>
-      <div id="setup-bin-group" class="form-group" style="display:none">
-        <label class="form-label">📋 Bin ID (já tenho um)</label>
-        <input class="form-control" id="setup-bin" placeholder="Cole aqui se já tiver um Bin ID de outro dispositivo" style="font-family:monospace;font-size:13px;"/>
-        <small style="color:var(--muted);font-size:11px">Deixe em branco para criar um novo · Cole o ID do seu chefe para ligar ao mesmo estoque</small>
-      </div>
-    </div>
-    <div class="setup-footer">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('setup-bin-group').style.display=document.getElementById('setup-bin-group').style.display==='none'?'flex':'none'">
-          Já tenho um Bin ID
-        </button>
-        <button class="btn btn-primary" id="setup-btn" onclick="setupConnect()">
-          ⚡ Ligar Sistema
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+<div class="app">
 
-<!-- ══ LOADING ══ -->
-<div class="loading-overlay" id="loading">
-  <div class="loading-spinner">
-  </div>
-</div>
-
-<!-- ══ APP ══ -->
-<div class="app" id="main-app" style="display:none">
-
+  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="logo">
-      <div class="logo-title">⚡ ESTOQUE ELETROOGAURA⚡</div>
-      <div class="logo-sub">Gestão de Estoque</div>
+      <div class="logo-title">⚡ EstoqueObras</div>
+      <div class="logo-sub">Gestão de Materiais</div>
       <div class="logo-sync">
-        <div class="sync-dot" id="sync-dot"></div>
-        <span id="sync-label">Sincronizado</span>
+        <div class="sync-dot"></div>
+        <span>Dados salvos no browser</span>
       </div>
     </div>
     <nav>
       <div class="nav-section">Principal</div>
-      <a class="nav-item" href="#dashboard"><span class="icon">📊</span><Emb></Emb>Estatística</a>
+      <a class="nav-item" href="#dashboard"><span class="icon">📊</span> Dashboard</a>
       <div class="nav-section">Gestão</div>
       <a class="nav-item" href="#estoque"><span class="icon">📦</span> Estoque</a>
       <a class="nav-item" href="#obras"><span class="icon">🏗️</span> Obras</a>
       <a class="nav-item" href="#movimentacoes"><span class="icon">🔄</span> Movimentações</a>
       <a class="nav-item" href="#funcionarios"><span class="icon">👷</span> Funcionários</a>
+      <div class="nav-section">Partilha</div>
+      <a class="nav-item" href="#compartilhar"><span class="icon">🔗</span> Compartilhar</a>
     </nav>
-    <div class="sidebar-footer">
-      <div style="font-size:11px;color:var(--muted)">Bin ID (partilhar):</div>
-      <div id="bin-id-display" style="font-family:monospace;font-size:10px;color:var(--accent);word-break:break-all;cursor:pointer" onclick="copyBinId()" title="Clique para copiar">—</div>
-      <div class="sidebar-config-btn" onclick="resetConfig()">⚙️ Reconfigurar / Trocar conta</div>
-    </div>
+    <div class="sidebar-footer">v2.0 · EstoqueObras</div>
   </aside>
 
+  <!-- MAIN -->
   <div class="main">
     <div class="topbar">
-      <div class="page-title" id="topTitle">Estatística</div>
-      <div class="topbar-actions" id="topActions">
-        <div class="sync-status" id="sync-status">
-          <span id="sync-icon">🟢</span><span id="sync-text">Online</span>
-        </div>
-      </div>
+      <div class="page-title" id="topTitle">Estoque</div>
+      <div class="topbar-actions" id="topActions"></div>
     </div>
     <div class="content">
 
@@ -157,6 +100,7 @@
           </div>
         </div>
       </div>
+
       <!-- ESTOQUE -->
       <div class="page" id="page-estoque">
         <div class="table-wrap">
@@ -164,21 +108,15 @@
             <div class="table-title">Inventário de Materiais</div>
             <div class="search-box">
               <span>🔍</span>
-              <input type="text" placeholder="Pesquisar..." id="search-estoque" oninput="renderEstoque()"/></div>
+              <input type="text" placeholder="Pesquisar..." id="search-estoque" oninput="renderEstoque()"/>
+            </div>
           </div>
           <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Nome do Item</th>
-                <th>Categoria</th>
-                <th>Total</th>
-                <th>Reservada</th>
-                <th>Saldo</th>
-                <th>Disponibilidade</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
+            <thead><tr>
+              <th>#</th><th>Nome do Item</th><th>Categoria</th>
+              <th>Total</th><th>Reservada</th><th>Saldo</th>
+              <th>Disponibilidade</th><th>Ações</th>
+            </tr></thead>
             <tbody id="tbody-estoque"></tbody>
           </table>
         </div>
@@ -187,19 +125,9 @@
       <!-- OBRAS -->
       <div class="page" id="page-obras">
         <div class="table-wrap">
-          <div class="table-header">
-            <div class="table-title">Cadastro de Obras</div>
-          </div>
+          <div class="table-header"><div class="table-title">Cadastro de Obras</div></div>
           <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Local da Obra</th>
-                <th>Responsável</th>
-                <th>Status</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
+            <thead><tr><th>#</th><th>Local da Obra</th><th>Responsável</th><th>Status</th><th>Ações</th></tr></thead>
             <tbody id="tbody-obras"></tbody>
           </table>
         </div>
@@ -216,16 +144,7 @@
             </div>
           </div>
           <table>
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Item</th>
-                <th>Qtd</th>
-                <th>Tipo</th>
-                <th>Obra</th>
-                <th>Funcionário</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Data</th><th>Item</th><th>Qtd</th><th>Tipo</th><th>Obra</th><th>Funcionário</th></tr></thead>
             <tbody id="tbody-movs"></tbody>
           </table>
         </div>
@@ -234,29 +153,69 @@
       <!-- FUNCIONÁRIOS -->
       <div class="page" id="page-funcionarios">
         <div class="table-wrap">
-          <div class="table-header">
-            <div class="table-title">Cadastro de Funcionários</div>
-          </div>
+          <div class="table-header"><div class="table-title">Cadastro de Funcionários</div></div>
           <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Nome</th>
-                <th>Cargo / Função</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="tbody-funcs">
-            </tbody>
+            <thead><tr><th>#</th><th>Nome</th><th>Cargo / Função</th><th>Ações</th></tr></thead>
+            <tbody id="tbody-funcs"></tbody>
           </table>
         </div>
+      </div>
+
+      <!-- COMPARTILHAR -->
+      <div class="page" id="page-compartilhar">
+
+        <div class="share-panel">
+          <div style="font-size:40px">📤</div>
+          <div class="share-panel-text">
+            <div class="share-panel-title">Exportar dados para o chefe</div>
+            <div class="share-panel-sub">
+              Gera um ficheiro .json com todos os dados actuais (itens, obras, movimentações, funcionários).<br>
+              Envie ao seu chefe por <strong>WhatsApp, e-mail ou Drive</strong>. Ele importa e fica com os mesmos dados.
+            </div>
+          </div>
+          <div class="share-panel-actions">
+            <button class="btn btn-primary" onclick="exportarDados()">⬇️ Exportar .json</button>
+            <button class="btn btn-ghost" onclick="verCodigo()">👁️ Ver código</button>
+          </div>
+        </div>
+
+        <div class="share-panel">
+          <div style="font-size:40px">📥</div>
+          <div class="share-panel-text">
+            <div class="share-panel-title">Importar dados recebidos</div>
+            <div class="share-panel-sub">
+              Recebeu o ficheiro .json do colega? Clique aqui para carregá-lo.<br>
+              <strong style="color:var(--red)">⚠️ Atenção: substitui todos os dados actuais pelo ficheiro importado.</strong>
+            </div>
+          </div>
+          <div class="share-panel-actions">
+            <input type="file" id="import-input" accept=".json" onchange="importarDados(event)"/>
+            <button class="btn btn-success" onclick="document.getElementById('import-input').click()">⬆️ Importar .json</button>
+          </div>
+        </div>
+
+        <div class="table-wrap" style="padding:22px">
+          <div class="table-title" style="margin-bottom:14px">💡 Como funciona — Explicação simples</div>
+          <div style="font-size:13px;color:#b0b8d0;line-height:2">
+            <strong style="color:var(--accent)">Por que os dados ficam salvos?</strong><br>
+            O sistema guarda tudo no <strong style="color:var(--text)">localStorage do seu browser</strong> — é uma memória interna do Chrome/Edge que nunca apaga sozinha, nem quando fecha o site. Os dados estão seguros enquanto não limpar o histórico do browser.<br><br>
+            <strong style="color:var(--accent)">Como partilhar com o chefe?</strong><br>
+            1. Você clica em <strong>Exportar .json</strong> → baixa um ficheiro<br>
+            2. Envia o ficheiro por WhatsApp ou e-mail ao chefe<br>
+            3. O chefe abre o site → vai em <strong>Compartilhar</strong> → clica <strong>Importar .json</strong><br>
+            4. Pronto — ele fica com os mesmos dados que você!<br><br>
+            <strong style="color:var(--accent)">Quando repetir?</strong><br>
+            Sempre que fizer alterações importantes (novos itens, saídas, etc.) e quiser que o chefe veja os dados actualizados.
+          </div>
+        </div>
+
       </div>
 
     </div>
   </div>
 </div>
 
-<!-- ══ MODAIS ══ -->
+<!-- MODAIS -->
 
 <div class="modal-overlay" id="modal-item">
   <div class="modal">
@@ -267,25 +226,14 @@
     <div class="modal-body">
       <input type="hidden" id="item-id"/>
       <div class="grid-2">
-        <div class="form-group">
-          <label class="form-label">Nome do Item *</label>
-          <input class="form-control" id="item-nome" placeholder="Ex: Cimento CP-II"/></div>
-        <div class="form-group">
-          <label class="form-label">Categoria *</label>
-          <input class="form-control" id="item-cat" placeholder="Ex: Materiais Básicos"/></div>
+        <div class="form-group"><label class="form-label">Nome do Item *</label><input class="form-control" id="item-nome" placeholder="Ex: Cimento CP-II"/></div>
+        <div class="form-group"><label class="form-label">Categoria *</label><input class="form-control" id="item-cat" placeholder="Ex: Materiais Básicos"/></div>
       </div>
       <div class="grid-2">
-        <div class="form-group">
-          <label class="form-label">Quantidade Total *</label>
-          <input class="form-control" type="number" id="item-qtd" placeholder="0" min="0"/></div>
-        <div class="form-group">
-          <label class="form-label">Unidade</label>
-          <input class="form-control" id="item-unidade" placeholder="sacos, kg, m²..."/>
-        </div>
+        <div class="form-group"><label class="form-label">Quantidade Total *</label><input class="form-control" type="number" id="item-qtd" placeholder="0" min="0"/></div>
+        <div class="form-group"><label class="form-label">Unidade</label><input class="form-control" id="item-unidade" placeholder="sacos, kg, m²..."/></div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Saldo Mínimo (alerta)</label>
-        <input class="form-control" type="number" id="item-minimo" placeholder="Ex: 50" min="0"/></div>
+      <div class="form-group"><label class="form-label">Saldo Mínimo (alerta)</label><input class="form-control" type="number" id="item-minimo" placeholder="Ex: 50" min="0"/></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-item')">Cancelar</button>
@@ -296,34 +244,16 @@
 
 <div class="modal-overlay" id="modal-reserva">
   <div class="modal">
-    <div class="modal-top">
-      <div class="modal-title">📋 Reservar Material</div>
-      <button class="btn-icon" onclick="closeModal('modal-reserva')">✕</button>
-    </div>
+    <div class="modal-top"><div class="modal-title">📋 Reservar Material</div><button class="btn-icon" onclick="closeModal('modal-reserva')">✕</button></div>
     <div class="modal-body">
       <input type="hidden" id="reserva-item-id"/>
-      <div class="form-group">
-        <label class="form-label">Item</label>
-        <input class="form-control" id="reserva-item-nome" readonly/>
-      </div>
+      <div class="form-group"><label class="form-label">Item</label><input class="form-control" id="reserva-item-nome" readonly/></div>
       <div class="grid-2">
-        <div class="form-group">
-          <label class="form-label">Saldo Disponível</label>
-          <input class="form-control" id="reserva-saldo" readonly/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Qtd a Reservar *</label>
-          <input class="form-control" type="number" id="reserva-qtd" placeholder="0" min="1"/>
-        </div>
+        <div class="form-group"><label class="form-label">Saldo Disponível</label><input class="form-control" id="reserva-saldo" readonly/></div>
+        <div class="form-group"><label class="form-label">Qtd a Reservar *</label><input class="form-control" type="number" id="reserva-qtd" placeholder="0" min="1"/></div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Obra *</label>
-        <select class="form-control" id="reserva-obra"></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Funcionário *</label>
-        <select class="form-control" id="reserva-func"></select>
-      </div>
+      <div class="form-group"><label class="form-label">Obra *</label><select class="form-control" id="reserva-obra"></select></div>
+      <div class="form-group"><label class="form-label">Funcionário *</label><select class="form-control" id="reserva-func"></select></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-reserva')">Cancelar</button>
@@ -334,34 +264,16 @@
 
 <div class="modal-overlay" id="modal-saida">
   <div class="modal">
-    <div class="modal-top">
-      <div class="modal-title">🚚 Registar Saída</div>
-      <button class="btn-icon" onclick="closeModal('modal-saida')">✕</button>
-    </div>
+    <div class="modal-top"><div class="modal-title">🚚 Registar Saída</div><button class="btn-icon" onclick="closeModal('modal-saida')">✕</button></div>
     <div class="modal-body">
       <input type="hidden" id="saida-item-id"/>
-      <div class="form-group">
-        <label class="form-label">Item</label>
-        <input class="form-control" id="saida-item-nome" readonly/>
-      </div>
+      <div class="form-group"><label class="form-label">Item</label><input class="form-control" id="saida-item-nome" readonly/></div>
       <div class="grid-2">
-        <div class="form-group">
-          <label class="form-label">Total Atual</label>
-          <input class="form-control" id="saida-total" readonly/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Quantidade de Saída *</label>
-          <input class="form-control" type="number" id="saida-qtd" placeholder="0" min="1"/>
-        </div>
+        <div class="form-group"><label class="form-label">Total Atual</label><input class="form-control" id="saida-total" readonly/></div>
+        <div class="form-group"><label class="form-label">Quantidade de Saída *</label><input class="form-control" type="number" id="saida-qtd" placeholder="0" min="1"/></div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Obra *</label>
-        <select class="form-control" id="saida-obra"></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Quem Levou *</label>
-        <select class="form-control" id="saida-func"></select>
-      </div>
+      <div class="form-group"><label class="form-label">Obra *</label><select class="form-control" id="saida-obra"></select></div>
+      <div class="form-group"><label class="form-label">Quem Levou *</label><select class="form-control" id="saida-func"></select></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-saida')">Cancelar</button>
@@ -405,159 +317,99 @@
   </div>
 </div>
 
+<div class="modal-overlay modal-wide" id="modal-export">
+  <div class="modal">
+    <div class="modal-top"><div class="modal-title">📋 Código dos seus dados</div><button class="btn-icon" onclick="closeModal('modal-export')">✕</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--muted)">Selecione tudo (Ctrl+A dentro da caixa), copie e envie ao colega. Ele vai em Compartilhar → Importar e cola o texto.</p>
+      <div class="export-box" id="export-box"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-export')">Fechar</button>
+      <button class="btn btn-primary" onclick="copiarExport()">📋 Copiar tudo</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toast-wrap"></div>
 
 <script>
-// ═══════════════════════════════════════════════════════
-//  CLOUD — JSONBin.io
-// ═══════════════════════════════════════════════════════
-const CFG_KEY  = 'eo_cfg';
-let   DB       = null;   // dados em memória
-let   isSaving = false;
+// ═══════════════════════════════════════════
+//  STORAGE — localStorage puro, sem API Key
+// ═══════════════════════════════════════════
+const K = { e:'eo2_estoque', o:'eo2_obras', m:'eo2_movs', f:'eo2_funcs' };
+const ld = k => { try { return JSON.parse(localStorage.getItem(k)) || []; } catch { return []; } };
+const sv = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+const genId = () => Date.now().toString(36) + Math.random().toString(36).slice(2,5);
 
-function getCfg() {
-  try { return JSON.parse(localStorage.getItem(CFG_KEY)) || {}; } catch { return {}; }
-}
-function setCfg(obj) { localStorage.setItem(CFG_KEY, JSON.stringify(obj)); }
+function getAll() { return { estoque:ld(K.e), obras:ld(K.o), movs:ld(K.m), funcs:ld(K.f) }; }
+function setAll(d) { sv(K.e,d.estoque); sv(K.o,d.obras); sv(K.m,d.movs); sv(K.f,d.funcs); }
 
-const API = 'https://api.jsonbin.io/v3/b';
+// ── Dados de exemplo na primeira vez ──
+(function seed() {
+  if (!ld(K.e).length) sv(K.e, [
+    {id:genId(),nome:'Cimento CP-II',      categoria:'Materiais Básicos',total:500,  reservada:0,unidade:'sacos', minimo:50 },
+    {id:genId(),nome:'Tijolo Cerâmico 6F', categoria:'Alvenaria',        total:10000,reservada:0,unidade:'unid',  minimo:500},
+    {id:genId(),nome:'Vergalhão 10mm',     categoria:'Ferragem',         total:300,  reservada:0,unidade:'barras',minimo:30 },
+    {id:genId(),nome:'Areia Média',        categoria:'Agregados',        total:80,   reservada:0,unidade:'m³',   minimo:10 },
+    {id:genId(),nome:'Brita 1',            categoria:'Agregados',        total:60,   reservada:0,unidade:'m³',   minimo:10 },
+  ]);
+  if (!ld(K.o).length) sv(K.o, [
+    {id:genId(),local:'Obra Central – Rua das Flores, 123',  responsavel:'João Silva',    status:'Ativa'  },
+    {id:genId(),local:'Condomínio Bela Vista – Lote 7',      responsavel:'Maria Oliveira',status:'Ativa'  },
+    {id:genId(),local:'Reforma Comercial – Av. Brasil, 450', responsavel:'Carlos Mendes', status:'Pausada'},
+  ]);
+  if (!ld(K.f).length) sv(K.f, [
+    {id:genId(),nome:'João Silva',    cargo:'Gestor de Obras'},
+    {id:genId(),nome:'Maria Oliveira',cargo:'Engenheira Civil'},
+    {id:genId(),nome:'Carlos Mendes', cargo:'Encarregado'    },
+    {id:genId(),nome:'Pedro Alves',   cargo:'Motorista'      },
+    {id:genId(),nome:'Fernanda Costa',cargo:'Almoxarife'     },
+  ]);
+})();
 
-async function cloudRead(apiKey, binId) {
-  const r = await fetch(`${API}/${binId}/latest`, {
-    headers: { 'X-Master-Key': apiKey }
+// ═══════════════════════════════════════════
+//  EXPORT / IMPORT
+// ═══════════════════════════════════════════
+function exportarDados() {
+  const blob = new Blob([JSON.stringify(getAll(),null,2)], {type:'application/json'});
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(blob),
+    download: 'estoque_' + new Date().toISOString().slice(0,10) + '.json'
   });
-  if (!r.ok) throw new Error('Erro ao ler: ' + r.status);
-  const j = await r.json();
-  return j.record;
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('✅ Ficheiro exportado! Envie ao seu chefe.');
 }
-
-async function cloudWrite(apiKey, binId, data) {
-  const r = await fetch(`${API}/${binId}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'X-Master-Key': apiKey },
-    body: JSON.stringify(data)
-  });
-  if (!r.ok) throw new Error('Erro ao gravar: ' + r.status);
+function verCodigo() {
+  document.getElementById('export-box').textContent = JSON.stringify(getAll(),null,2);
+  openModal('modal-export');
 }
-
-async function cloudCreate(apiKey, data) {
-  const r = await fetch(API, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Master-Key': apiKey, 'X-Bin-Private': 'false' },
-    body: JSON.stringify(data)
-  });
-  if (!r.ok) throw new Error('Erro ao criar bin: ' + r.status);
-  const j = await r.json();
-  return j.metadata.id;
+function copiarExport() {
+  navigator.clipboard.writeText(document.getElementById('export-box').textContent)
+    .then(() => toast('📋 Copiado!'));
 }
-
-// ─── Setup ───────────────────────────────────────────
-async function setupConnect() {
-  const apiKey = document.getElementById('setup-key').value.trim();
-  const binId  = document.getElementById('setup-bin').value.trim();
-  if (!apiKey) { toast('Introduza a API Key', 'error'); return; }
-
-  const btn = document.getElementById('setup-btn');
-  btn.disabled = true; btn.textContent = '⏳ A ligar...';
-
-  try {
-    let finalBinId = binId;
-    if (!binId) {
-      // Criar novo bin com dados iniciais
-      finalBinId = await cloudCreate(apiKey, defaultData());
-      toast('✅ Base de dados criada! Bin ID: ' + finalBinId);
-    }
-    // Verificar leitura
-    DB = await cloudRead(apiKey, finalBinId);
-    setCfg({ apiKey, binId: finalBinId });
-    launchApp(finalBinId);
-  } catch(e) {
-    toast('Erro: ' + e.message + '. Verifique a API Key.', 'error');
-    btn.disabled = false; btn.textContent = '⚡ Criar e Ligar';
-  }
-}
-
-function defaultData() {
-  const g = () => Date.now().toString(36) + Math.random().toString(36).slice(2,5);
-  return {
-    estoque: [
-      {id:g(),nome:'Cimento CP-II',categoria:'Materiais Básicos',total:500,reservada:0,unidade:'sacos',minimo:50},
-      {id:g(),nome:'Tijolo Cerâmico 6F',categoria:'Alvenaria',total:10000,reservada:0,unidade:'unid',minimo:500},
-      {id:g(),nome:'Vergalhão 10mm',categoria:'Ferragem',total:300,reservada:0,unidade:'barras',minimo:30},
-      {id:g(),nome:'Areia Média',categoria:'Agregados',total:80,reservada:0,unidade:'m³',minimo:10},
-    ],
-    obras: [
-      {id:g(),local:'Obra Central – Rua das Flores, 123',responsavel:'João Silva',status:'Ativa'},
-      {id:g(),local:'Condomínio Bela Vista – Lote 7',responsavel:'Maria Oliveira',status:'Ativa'},
-    ],
-    movs: [],
-    funcs: [
-      {id:g(),nome:'João Silva',cargo:'Gestor de Obras'},
-      {id:g(),nome:'Pedro Alves',cargo:'Motorista'},
-      {id:g(),nome:'Fernanda Costa',cargo:'Almoxarife'},
-    ]
+function importarDados(ev) {
+  const file = ev.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const d = JSON.parse(e.target.result);
+      if (!d.estoque||!d.obras||!d.movs||!d.funcs) throw new Error();
+      if (!confirm(`Importar?\n• ${d.estoque.length} itens\n• ${d.obras.length} obras\n• ${d.movs.length} movimentações\n• ${d.funcs.length} funcionários\n\nIsso substitui os seus dados actuais.`)) return;
+      setAll(d); renderPage(getCurrentPage());
+      toast('✅ Dados importados com sucesso!');
+    } catch { toast('❌ Ficheiro inválido.','error'); }
+    ev.target.value = '';
   };
+  r.readAsText(file);
 }
 
-function launchApp(binId) {
-  document.getElementById('setup-screen').style.display = 'none';
-  document.getElementById('main-app').style.display = 'flex';
-  document.getElementById('bin-id-display').textContent = binId;
-  applyPage(getCurrentPage());
-  setSyncStatus('ok');
-}
-
-async function syncSave() {
-  if (isSaving) return;
-  isSaving = true;
-  setSyncStatus('saving');
-  const cfg = getCfg();
-  try {
-    await cloudWrite(cfg.apiKey, cfg.binId, DB);
-    setSyncStatus('ok');
-  } catch(e) {
-    setSyncStatus('error');
-    toast('Erro ao guardar na nuvem: ' + e.message, 'error');
-  }
-  isSaving = false;
-}
-
-async function syncLoad() {
-  const cfg = getCfg();
-  try {
-    DB = await cloudRead(cfg.apiKey, cfg.binId);
-    setSyncStatus('ok');
-    renderPage(getCurrentPage());
-  } catch(e) { setSyncStatus('error'); }
-}
-
-function setSyncStatus(s) {
-  const icon = document.getElementById('sync-icon');
-  const text = document.getElementById('sync-text');
-  const dot  = document.getElementById('sync-dot');
-  if (!icon) return;
-  if (s === 'ok')     { icon.textContent = '🟢'; text.textContent = 'Sincronizado'; dot.style.background = 'var(--green)'; }
-  if (s === 'saving') { icon.textContent = '🔄'; text.textContent = 'A guardar...'; dot.style.background = 'var(--accent)'; }
-  if (s === 'error')  { icon.textContent = '🔴'; text.textContent = 'Erro de ligação'; dot.style.background = 'var(--red)'; }
-}
-
-function copyBinId() {
-  const id = document.getElementById('bin-id-display').textContent;
-  navigator.clipboard.writeText(id).then(() => toast('Bin ID copiado! Partilhe com o seu chefe.'));
-}
-
-function resetConfig() {
-  if (!confirm('Isto vai desligar esta conta. Os dados na nuvem ficam guardados. Continuar?')) return;
-  localStorage.removeItem(CFG_KEY);
-  location.reload();
-}
-
-// ═══════════════════════════════════════════════════════
-//  NAVEGAÇÃO POR HASH (links directos)
-// ═══════════════════════════════════════════════════════
-const PAGES = ['dashboard','estoque','obras','movimentacoes','funcionarios'];
-const TITLES = {dashboard:'Dashboard',estoque:'Estoque',obras:'Obras',movimentacoes:'Movimentações',funcionarios:'Funcionários'};
-const PAGE_ACTIONS = {
+// ═══════════════════════════════════════════
+//  NAVEGAÇÃO POR HASH
+// ═══════════════════════════════════════════
+const PAGES = ['dashboard','estoque','obras','movimentacoes','funcionarios','compartilhar'];
+const TITLES = {dashboard:'Dashboard',estoque:'Estoque',obras:'Obras',movimentacoes:'Movimentações',funcionarios:'Funcionários',compartilhar:'Compartilhar'};
+const ACTIONS = {
   estoque:       `<button class="btn btn-primary" onclick="openNewItem()">＋ Novo Item</button>`,
   obras:         `<button class="btn btn-primary" onclick="openNewObra()">＋ Nova Obra</button>`,
   funcionarios:  `<button class="btn btn-primary" onclick="openNewFunc()">＋ Novo Funcionário</button>`,
@@ -566,54 +418,41 @@ const PAGE_ACTIONS = {
 
 function getCurrentPage() {
   const h = location.hash.replace('#','').toLowerCase();
-  return PAGES.includes(h) ? h : 'dashboard';
+  return PAGES.includes(h) ? h : 'estoque';
 }
-
-function applyPage(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const el = document.getElementById('page-' + page);
-  if (el) el.classList.add('active');
-  const nav = document.querySelector(`.nav-item[href="#${page}"]`);
-  if (nav) nav.classList.add('active');
-  document.getElementById('topTitle').textContent = TITLES[page] || page;
-
-  const acts = document.getElementById('topActions');
-  acts.innerHTML = `<div class="sync-status"><span id="sync-icon">🟢</span><span id="sync-text">Online</span></div>`;
-  if (PAGE_ACTIONS[page]) acts.innerHTML = PAGE_ACTIONS[page] + acts.innerHTML;
-
-  renderPage(page);
-  // Recarregar dados ao mudar de página
-  syncLoad();
+function applyPage(p) {
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('page-'+p)?.classList.add('active');
+  document.querySelector(`.nav-item[href="#${p}"]`)?.classList.add('active');
+  document.getElementById('topTitle').textContent = TITLES[p]||p;
+  document.getElementById('topActions').innerHTML = ACTIONS[p]||'';
+  renderPage(p);
 }
-
 window.addEventListener('hashchange', () => applyPage(getCurrentPage()));
 
 function renderPage(p) {
-  if (!DB) return;
-  if (p === 'dashboard')    renderDashboard();
-  if (p === 'estoque')      renderEstoque();
-  if (p === 'obras')        renderObras();
-  if (p === 'movimentacoes')renderMovs();
-  if (p === 'funcionarios') renderFuncs();
+  if (p==='dashboard')    renderDashboard();
+  if (p==='estoque')      renderEstoque();
+  if (p==='obras')        renderObras();
+  if (p==='movimentacoes')renderMovs();
+  if (p==='funcionarios') renderFuncs();
 }
 
-// ═══════════════════════════════════════════════════════
-//  RENDER FUNCTIONS
-// ═══════════════════════════════════════════════════════
-
-// ── Dashboard ──
+// ═══════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════
 function renderDashboard() {
-  const e=DB.estoque, o=DB.obras, m=DB.movs;
-  document.getElementById('d-itens').textContent  = e.length;
-  document.getElementById('d-obras').textContent  = o.filter(x=>x.status==='Ativa').length;
-  document.getElementById('d-movs').textContent   = m.length;
-  const low = e.filter(i=>i.minimo>0&&(i.total-i.reservada)<=i.minimo);
+  const {estoque,obras,movs} = getAll();
+  document.getElementById('d-itens').textContent  = estoque.length;
+  document.getElementById('d-obras').textContent  = obras.filter(o=>o.status==='Ativa').length;
+  document.getElementById('d-movs').textContent   = movs.length;
+  const low = estoque.filter(i=>i.minimo>0&&(i.total-i.reservada)<=i.minimo);
   document.getElementById('d-alerts').textContent = low.length;
 
-  document.getElementById('dash-activity').innerHTML = !m.length
+  document.getElementById('dash-activity').innerHTML = !movs.length
     ? '<div style="padding:24px;text-align:center;color:var(--muted)">Sem movimentações ainda</div>'
-    : [...m].reverse().slice(0,8).map(v=>`<div class="activity-item">
+    : [...movs].reverse().slice(0,8).map(v=>`<div class="activity-item">
         <div class="activity-dot" style="background:${v.tipo==='Saída'?'var(--red)':'var(--blue)'}"></div>
         <div><div class="activity-text"><strong>${v.tipo}</strong> · ${v.item} · <strong>${v.qtd}</strong> ${v.unidade||''}${v.obra?' → '+v.obra:''}</div>
         <div class="activity-date">${v.func?v.func+' · ':''}${fmtDate(v.data)}</div></div>
@@ -627,14 +466,16 @@ function renderDashboard() {
         <div class="alert-qty">${i.total-i.reservada}</div></div>`).join('');
 }
 
-// ── Estoque ──
+// ═══════════════════════════════════════════
+//  ESTOQUE
+// ═══════════════════════════════════════════
 function renderEstoque() {
-  const q=(document.getElementById('search-estoque').value||'').toLowerCase();
-  const list=DB.estoque.filter(i=>!q||i.nome.toLowerCase().includes(q)||i.categoria.toLowerCase().includes(q));
-  const t=document.getElementById('tbody-estoque');
-  if(!list.length){t.innerHTML='<tr class="empty-row"><td colspan="8">Nenhum item encontrado</td></tr>';return;}
-  t.innerHTML=list.map((item,idx)=>{
-    const s=item.total-item.reservada,pct=item.total>0?Math.max(0,Math.min(100,s/item.total*100)):0;
+  const q = (document.getElementById('search-estoque').value||'').toLowerCase();
+  const list = ld(K.e).filter(i=>!q||i.nome.toLowerCase().includes(q)||i.categoria.toLowerCase().includes(q));
+  const t = document.getElementById('tbody-estoque');
+  if (!list.length) { t.innerHTML='<tr class="empty-row"><td colspan="8">Nenhum item encontrado</td></tr>'; return; }
+  t.innerHTML = list.map((item,idx)=>{
+    const s=item.total-item.reservada, pct=item.total>0?Math.max(0,Math.min(100,s/item.total*100)):0;
     const bc=pct>50?'var(--green)':pct>20?'var(--accent)':'var(--red)';
     const badge=s<=0?'<span class="badge badge-red">⛔ Esgotado</span>':
                  (item.minimo>0&&s<=item.minimo)?'<span class="badge badge-yellow">⚠️ Baixo</span>':
@@ -649,157 +490,141 @@ function renderEstoque() {
       <td><div class="saldo-bar"><div class="saldo-bar-track"><div class="saldo-bar-fill" style="width:${pct}%;background:${bc}"></div></div>
         <div class="saldo-bar-text">${badge}</div></div></td>
       <td><div class="actions-cell">
-        <button class="btn btn-sm btn-ghost" onclick="openReserva('${item.id}')">📋 Reservar</button>
+        <button class="btn btn-sm btn-ghost"  onclick="openReserva('${item.id}')">📋 Reservar</button>
         <button class="btn btn-sm btn-success" onclick="openSaida('${item.id}')">🚚 Saída</button>
         <button class="btn-icon" style="font-size:13px" onclick="openEditItem('${item.id}')">✏️</button>
         <button class="btn-icon" style="font-size:13px" onclick="deleteItem('${item.id}')">🗑️</button>
       </div></td></tr>`;
   }).join('');
 }
-
 function openNewItem() {
   ['item-id','item-nome','item-cat','item-qtd','item-unidade','item-minimo'].forEach(x=>document.getElementById(x).value='');
-  document.getElementById('modal-item-title').textContent='Novo Item';
-  openModal('modal-item');
+  document.getElementById('modal-item-title').textContent='Novo Item'; openModal('modal-item');
 }
 function openEditItem(id) {
-  const i=DB.estoque.find(x=>x.id===id); if(!i) return;
-  document.getElementById('item-id').value=id;
-  document.getElementById('item-nome').value=i.nome;
-  document.getElementById('item-cat').value=i.categoria;
-  document.getElementById('item-qtd').value=i.total;
-  document.getElementById('item-unidade').value=i.unidade||'';
-  document.getElementById('item-minimo').value=i.minimo||'';
-  document.getElementById('modal-item-title').textContent='Editar Item';
-  openModal('modal-item');
+  const i=ld(K.e).find(x=>x.id===id); if(!i) return;
+  document.getElementById('item-id').value=id; document.getElementById('item-nome').value=i.nome;
+  document.getElementById('item-cat').value=i.categoria; document.getElementById('item-qtd').value=i.total;
+  document.getElementById('item-unidade').value=i.unidade||''; document.getElementById('item-minimo').value=i.minimo||'';
+  document.getElementById('modal-item-title').textContent='Editar Item'; openModal('modal-item');
 }
-async function saveItem() {
-  const id=document.getElementById('item-id').value;
-  const nome=document.getElementById('item-nome').value.trim();
-  const cat=document.getElementById('item-cat').value.trim();
-  const total=parseInt(document.getElementById('item-qtd').value)||0;
-  const unidade=document.getElementById('item-unidade').value.trim();
-  const minimo=parseInt(document.getElementById('item-minimo').value)||0;
+function saveItem() {
+  const id=document.getElementById('item-id').value, nome=document.getElementById('item-nome').value.trim();
+  const cat=document.getElementById('item-cat').value.trim(), total=parseInt(document.getElementById('item-qtd').value)||0;
+  const unidade=document.getElementById('item-unidade').value.trim(), minimo=parseInt(document.getElementById('item-minimo').value)||0;
   if(!nome||!cat||total<0){toast('Preencha todos os campos','error');return;}
-  if(id) { DB.estoque=DB.estoque.map(x=>x.id===id?{...x,nome,categoria:cat,total,unidade,minimo}:x); toast('Item atualizado!'); }
-  else   { DB.estoque.push({id:genId(),nome,categoria:cat,total,reservada:0,unidade,minimo}); toast('Item adicionado!'); }
-  closeModal('modal-item'); renderEstoque(); renderDashboard(); await syncSave();
+  let list=ld(K.e);
+  if(id){list=list.map(x=>x.id===id?{...x,nome,categoria:cat,total,unidade,minimo}:x);toast('Item atualizado!');}
+  else{list.push({id:genId(),nome,categoria:cat,total,reservada:0,unidade,minimo});toast('Item adicionado!');}
+  sv(K.e,list); closeModal('modal-item'); renderEstoque(); renderDashboard();
 }
-async function deleteItem(id) {
+function deleteItem(id) {
   if(!confirm('Eliminar este item?')) return;
-  DB.estoque=DB.estoque.filter(x=>x.id!==id);
-  renderEstoque(); renderDashboard(); await syncSave(); toast('Item removido');
+  sv(K.e,ld(K.e).filter(x=>x.id!==id)); renderEstoque(); renderDashboard(); toast('Item removido');
 }
 
 // ── Reserva ──
 function openReserva(id) {
-  const i=DB.estoque.find(x=>x.id===id); if(!i) return;
+  const i=ld(K.e).find(x=>x.id===id); if(!i) return;
   document.getElementById('reserva-item-id').value=id;
   document.getElementById('reserva-item-nome').value=i.nome;
   document.getElementById('reserva-saldo').value=(i.total-i.reservada)+' '+(i.unidade||'');
   document.getElementById('reserva-qtd').value='';
-  fillSelect('reserva-obra',DB.obras.filter(o=>o.status==='Ativa'),'local');
-  fillSelect('reserva-func',DB.funcs,'nome');
-  openModal('modal-reserva');
+  fillSel('reserva-obra',ld(K.o).filter(o=>o.status==='Ativa'),'local');
+  fillSel('reserva-func',ld(K.f),'nome'); openModal('modal-reserva');
 }
-async function confirmarReserva() {
+function confirmarReserva() {
   const id=document.getElementById('reserva-item-id').value;
   const qtd=parseInt(document.getElementById('reserva-qtd').value)||0;
-  const obra=document.getElementById('reserva-obra').value;
-  const func=document.getElementById('reserva-func').value;
+  const obra=document.getElementById('reserva-obra').value, func=document.getElementById('reserva-func').value;
   if(qtd<=0||!obra||!func){toast('Preencha todos os campos','error');return;}
-  const i=DB.estoque.find(x=>x.id===id);
+  let list=ld(K.e); const i=list.find(x=>x.id===id);
   if(qtd>(i.total-i.reservada)){toast('Quantidade maior que o saldo!','error');return;}
-  i.reservada+=qtd;
+  i.reservada+=qtd; sv(K.e,list);
   logMov({item:i.nome,qtd,tipo:'Reserva',obra,func,unidade:i.unidade});
   closeModal('modal-reserva'); renderEstoque(); renderDashboard();
   toast(`✅ Reserva de ${qtd} ${i.unidade||''} registada!`);
-  await syncSave();
 }
 
 // ── Saída ──
 function openSaida(id) {
-  const i=DB.estoque.find(x=>x.id===id); if(!i) return;
+  const i=ld(K.e).find(x=>x.id===id); if(!i) return;
   document.getElementById('saida-item-id').value=id;
   document.getElementById('saida-item-nome').value=i.nome;
   document.getElementById('saida-total').value=i.total+' '+(i.unidade||'');
   document.getElementById('saida-qtd').value='';
-  fillSelect('saida-obra',DB.obras.filter(o=>o.status==='Ativa'),'local');
-  fillSelect('saida-func',DB.funcs,'nome');
-  openModal('modal-saida');
+  fillSel('saida-obra',ld(K.o).filter(o=>o.status==='Ativa'),'local');
+  fillSel('saida-func',ld(K.f),'nome'); openModal('modal-saida');
 }
 function openNewSaidaGeral() {
-  const e=DB.estoque.filter(i=>(i.total-i.reservada)>0);
-  if(!e.length){toast('Não há itens com saldo disponível','error');return;}
-  openSaida(e[0].id);
+  const e=ld(K.e).filter(i=>(i.total-i.reservada)>0);
+  if(!e.length){toast('Não há itens com saldo','error');return;} openSaida(e[0].id);
 }
-async function confirmarSaida() {
+function confirmarSaida() {
   const id=document.getElementById('saida-item-id').value;
   const qtd=parseInt(document.getElementById('saida-qtd').value)||0;
-  const obra=document.getElementById('saida-obra').value;
-  const func=document.getElementById('saida-func').value;
+  const obra=document.getElementById('saida-obra').value, func=document.getElementById('saida-func').value;
   if(qtd<=0||!obra||!func){toast('Preencha todos os campos','error');return;}
-  const i=DB.estoque.find(x=>x.id===id);
+  let list=ld(K.e); const i=list.find(x=>x.id===id);
   if(qtd>i.total){toast('Quantidade maior que o total físico!','error');return;}
-  i.total-=qtd; i.reservada=Math.max(0,i.reservada-qtd);
+  i.total-=qtd; i.reservada=Math.max(0,i.reservada-qtd); sv(K.e,list);
   logMov({item:i.nome,qtd,tipo:'Saída',obra,func,unidade:i.unidade});
   closeModal('modal-saida'); renderEstoque(); renderDashboard();
   toast(`🚚 Saída de ${qtd} ${i.unidade||''} confirmada!`);
-  await syncSave();
 }
 
-// ── Obras ──
+// ═══════════════════════════════════════════
+//  OBRAS
+// ═══════════════════════════════════════════
 function renderObras() {
-  const t=document.getElementById('tbody-obras');
-  if(!DB.obras.length){t.innerHTML='<tr class="empty-row"><td colspan="5">Nenhuma obra cadastrada</td></tr>';return;}
-  t.innerHTML=DB.obras.map((o,i)=>{
+  const list=ld(K.o), t=document.getElementById('tbody-obras');
+  if(!list.length){t.innerHTML='<tr class="empty-row"><td colspan="5">Nenhuma obra cadastrada</td></tr>';return;}
+  t.innerHTML=list.map((o,i)=>{
     const b=o.status==='Ativa'?'badge-green':o.status==='Pausada'?'badge-yellow':'badge-red';
-    return `<tr><td style="color:var(--muted)">${i+1}</td><td><strong>${o.local}</strong></td>
-      <td>${o.responsavel}</td><td><span class="badge ${b}">${o.status}</span></td>
+    return `<tr><td style="color:var(--muted)">${i+1}</td><td><strong>${o.local}</strong></td><td>${o.responsavel}</td>
+      <td><span class="badge ${b}">${o.status}</span></td>
       <td><div class="actions-cell">
         <button class="btn-icon" style="font-size:13px" onclick="openEditObra('${o.id}')">✏️</button>
         <button class="btn-icon" style="font-size:13px" onclick="deleteObra('${o.id}')">🗑️</button>
       </div></td></tr>`;
   }).join('');
 }
-function openNewObra() {
+function openNewObra(){
   ['obra-id','obra-local','obra-resp'].forEach(x=>document.getElementById(x).value='');
   document.getElementById('obra-status').value='Ativa';
-  document.getElementById('modal-obra-title').textContent='Nova Obra';
-  openModal('modal-obra');
+  document.getElementById('modal-obra-title').textContent='Nova Obra'; openModal('modal-obra');
 }
-function openEditObra(id) {
-  const o=DB.obras.find(x=>x.id===id); if(!o) return;
-  document.getElementById('obra-id').value=id;
-  document.getElementById('obra-local').value=o.local;
-  document.getElementById('obra-resp').value=o.responsavel;
-  document.getElementById('obra-status').value=o.status;
-  document.getElementById('modal-obra-title').textContent='Editar Obra';
-  openModal('modal-obra');
+function openEditObra(id){
+  const o=ld(K.o).find(x=>x.id===id); if(!o) return;
+  document.getElementById('obra-id').value=id; document.getElementById('obra-local').value=o.local;
+  document.getElementById('obra-resp').value=o.responsavel; document.getElementById('obra-status').value=o.status;
+  document.getElementById('modal-obra-title').textContent='Editar Obra'; openModal('modal-obra');
 }
-async function saveObra() {
-  const id=document.getElementById('obra-id').value;
-  const local=document.getElementById('obra-local').value.trim();
-  const resp=document.getElementById('obra-resp').value.trim();
-  const status=document.getElementById('obra-status').value;
+function saveObra(){
+  const id=document.getElementById('obra-id').value, local=document.getElementById('obra-local').value.trim();
+  const resp=document.getElementById('obra-resp').value.trim(), status=document.getElementById('obra-status').value;
   if(!local||!resp){toast('Preencha todos os campos','error');return;}
-  if(id) { DB.obras=DB.obras.map(x=>x.id===id?{...x,local,responsavel:resp,status}:x); toast('Obra atualizada!'); }
-  else   { DB.obras.push({id:genId(),local,responsavel:resp,status}); toast('Obra cadastrada!'); }
-  closeModal('modal-obra'); renderObras(); await syncSave();
+  let list=ld(K.o);
+  if(id){list=list.map(x=>x.id===id?{...x,local,responsavel:resp,status}:x);toast('Obra atualizada!');}
+  else{list.push({id:genId(),local,responsavel:resp,status});toast('Obra cadastrada!');}
+  sv(K.o,list); closeModal('modal-obra'); renderObras();
 }
-async function deleteObra(id) {
+function deleteObra(id){
   if(!confirm('Eliminar esta obra?')) return;
-  DB.obras=DB.obras.filter(x=>x.id!==id);
-  renderObras(); await syncSave(); toast('Obra removida');
+  sv(K.o,ld(K.o).filter(x=>x.id!==id)); renderObras(); toast('Obra removida');
 }
 
-// ── Movimentações ──
-function logMov(m) {
-  DB.movs.push({id:genId(),data:new Date().toISOString(),item:m.item,qtd:m.qtd,tipo:m.tipo,obra:m.obra,func:m.func,unidade:m.unidade||''});
+// ═══════════════════════════════════════════
+//  MOVIMENTAÇÕES
+// ═══════════════════════════════════════════
+function logMov(m){
+  const list=ld(K.m);
+  list.push({id:genId(),data:new Date().toISOString(),item:m.item,qtd:m.qtd,tipo:m.tipo,obra:m.obra,func:m.func,unidade:m.unidade||''});
+  sv(K.m,list);
 }
-function renderMovs() {
+function renderMovs(){
   const q=(document.getElementById('search-movs').value||'').toLowerCase();
-  const list=[...DB.movs].reverse().filter(m=>!q||m.item.toLowerCase().includes(q)||(m.obra||'').toLowerCase().includes(q));
+  const list=[...ld(K.m)].reverse().filter(m=>!q||m.item.toLowerCase().includes(q)||(m.obra||'').toLowerCase().includes(q)||(m.func||'').toLowerCase().includes(q));
   const t=document.getElementById('tbody-movs');
   if(!list.length){t.innerHTML='<tr class="empty-row"><td colspan="6">Nenhuma movimentação registada</td></tr>';return;}
   t.innerHTML=list.map(m=>`<tr>
@@ -810,54 +635,50 @@ function renderMovs() {
   </tr>`).join('');
 }
 
-// ── Funcionários ──
-function renderFuncs() {
-  const t=document.getElementById('tbody-funcs');
-  if(!DB.funcs.length){t.innerHTML='<tr class="empty-row"><td colspan="4">Nenhum funcionário cadastrado</td></tr>';return;}
-  t.innerHTML=DB.funcs.map((f,i)=>`<tr>
-    <td style="color:var(--muted)">${i+1}</td><td><strong>${f.nome}</strong></td>
-    <td>${f.cargo||'—'}</td>
+// ═══════════════════════════════════════════
+//  FUNCIONÁRIOS
+// ═══════════════════════════════════════════
+function renderFuncs(){
+  const list=ld(K.f), t=document.getElementById('tbody-funcs');
+  if(!list.length){t.innerHTML='<tr class="empty-row"><td colspan="4">Nenhum funcionário cadastrado</td></tr>';return;}
+  t.innerHTML=list.map((f,i)=>`<tr>
+    <td style="color:var(--muted)">${i+1}</td><td><strong>${f.nome}</strong></td><td>${f.cargo||'—'}</td>
     <td><div class="actions-cell">
       <button class="btn-icon" style="font-size:13px" onclick="openEditFunc('${f.id}')">✏️</button>
       <button class="btn-icon" style="font-size:13px" onclick="deleteFunc('${f.id}')">🗑️</button>
     </div></td></tr>`).join('');
 }
-function openNewFunc() {
+function openNewFunc(){
   ['func-id','func-nome','func-cargo'].forEach(x=>document.getElementById(x).value='');
-  document.getElementById('modal-func-title').textContent='Novo Funcionário';
-  openModal('modal-func');
+  document.getElementById('modal-func-title').textContent='Novo Funcionário'; openModal('modal-func');
 }
-function openEditFunc(id) {
-  const f=DB.funcs.find(x=>x.id===id); if(!f) return;
-  document.getElementById('func-id').value=id;
-  document.getElementById('func-nome').value=f.nome;
+function openEditFunc(id){
+  const f=ld(K.f).find(x=>x.id===id); if(!f) return;
+  document.getElementById('func-id').value=id; document.getElementById('func-nome').value=f.nome;
   document.getElementById('func-cargo').value=f.cargo||'';
-  document.getElementById('modal-func-title').textContent='Editar Funcionário';
-  openModal('modal-func');
+  document.getElementById('modal-func-title').textContent='Editar Funcionário'; openModal('modal-func');
 }
-async function saveFunc() {
-  const id=document.getElementById('func-id').value;
-  const nome=document.getElementById('func-nome').value.trim();
+function saveFunc(){
+  const id=document.getElementById('func-id').value, nome=document.getElementById('func-nome').value.trim();
   const cargo=document.getElementById('func-cargo').value.trim();
   if(!nome){toast('Informe o nome','error');return;}
-  if(id) { DB.funcs=DB.funcs.map(x=>x.id===id?{...x,nome,cargo}:x); toast('Funcionário atualizado!'); }
-  else   { DB.funcs.push({id:genId(),nome,cargo}); toast('Funcionário cadastrado!'); }
-  closeModal('modal-func'); renderFuncs(); await syncSave();
+  let list=ld(K.f);
+  if(id){list=list.map(x=>x.id===id?{...x,nome,cargo}:x);toast('Funcionário atualizado!');}
+  else{list.push({id:genId(),nome,cargo});toast('Funcionário cadastrado!');}
+  sv(K.f,list); closeModal('modal-func'); renderFuncs();
 }
-async function deleteFunc(id) {
+function deleteFunc(id){
   if(!confirm('Eliminar este funcionário?')) return;
-  DB.funcs=DB.funcs.filter(x=>x.id!==id);
-  renderFuncs(); await syncSave(); toast('Funcionário removido');
+  sv(K.f,ld(K.f).filter(x=>x.id!==id)); renderFuncs(); toast('Funcionário removido');
 }
 
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 //  UTILS
-// ═══════════════════════════════════════════════════════
-const genId = () => Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+// ═══════════════════════════════════════════
 const openModal  = id => document.getElementById(id).classList.add('open');
 const closeModal = id => document.getElementById(id).classList.remove('open');
 document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
-function fillSelect(id,items,key){document.getElementById(id).innerHTML=items.map(i=>`<option value="${i[key]}">${i[key]}</option>`).join('');}
+function fillSel(id,items,key){document.getElementById(id).innerHTML=items.map(i=>`<option value="${i[key]}">${i[key]}</option>`).join('');}
 function fmtDate(iso){const d=new Date(iso);return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
 function toast(msg,type='success'){
   const w=document.getElementById('toast-wrap'),t=document.createElement('div');
@@ -865,26 +686,8 @@ function toast(msg,type='success'){
   w.appendChild(t);setTimeout(()=>t.remove(),4000);
 }
 
-// ═══════════════════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════════════════
-(async function init() {
-  const cfg = getCfg();
-  if (cfg.apiKey && cfg.binId) {
-    try {
-      document.getElementById('loading').classList.add('show');
-      DB = await cloudRead(cfg.apiKey, cfg.binId);
-      document.getElementById('loading').classList.remove('show');
-      launchApp(cfg.binId);
-    } catch(e) {
-      document.getElementById('loading').classList.remove('show');
-
-      toast('Não foi possível ligar à nuvem. Reconfigure.','error');
-      // Mostrar setup
-    }
-  }
-  // Caso contrário a tela de setup já está visível
-})();
+// ── INIT ──
+applyPage(getCurrentPage());
 </script>
 </body>
 </html>
