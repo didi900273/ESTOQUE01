@@ -41,14 +41,20 @@
     </div>
     <nav>
       <div class="nav-section">Principal</div>
-      <a class="nav-item" href="#dashboard"><span class="icon">📊</span> Dashboard</a>
+      <a class="nav-item" href="#dashboard">
+        <span class="icon">📊</span> Dashboard</a>
       <div class="nav-section">Gestão</div>
-      <a class="nav-item" href="#estoque"><span class="icon">📦</span> Estoque</a>
-      <a class="nav-item" href="#obras"><span class="icon">🏗️</span> Obras</a>
-      <a class="nav-item" href="#movimentacoes"><span class="icon">🔄</span> Movimentações</a>
-      <a class="nav-item" href="#funcionarios"><span class="icon">👷</span> Funcionários</a>
+      <a class="nav-item" href="#estoque">
+        <span class="icon">📦</span> Estoque</a>
+      <a class="nav-item" href="#obras">
+        <span class="icon">🏗️</span> Obras</a>
+      <a class="nav-item" href="#movimentacoes">
+        <span class="icon">🔄</span> Movimentações</a>
+      <a class="nav-item" href="#funcionarios">
+        <span class="icon">👷</span> Funcionários</a>
       <div class="nav-section">Partilha</div>
-      <a class="nav-item" href="#compartilhar"><span class="icon">🔗</span> Compartilhar</a>
+      <a class="nav-item" href="#compartilhar">
+        <span class="icon">🔗</span> Compartilhar</a>
     </nav>
     <div class="sidebar-footer">v2.0 · EstoqueObras</div>
   </aside>
@@ -57,7 +63,7 @@
   <div class="main">
     <div class="topbar">
       <div class="page-title" id="topTitle">Estoque</div>
-      <div class="topbar-actions" id="topActions"></div>
+      <div class="topbar-actions" id="topActions"> </div>
     </div>
     <div class="content">
 
@@ -91,11 +97,14 @@
         </div>
         <div class="dash-grid">
           <div class="table-wrap">
-            <div class="table-header"><div class="table-title">Últimas Movimentações</div></div>
+            <div class="table-header">
+              <div class="table-title">Últimas Movimentações</div></div>
             <div class="activity-list" id="dash-activity"></div>
           </div>
           <div class="table-wrap">
-            <div class="table-header"><div class="table-title">⚠️ Saldo Baixo</div></div>
+            <div class="table-header">
+              <div class="table-title">⚠️ Saldo Baixo</div>
+            </div>
             <div class="alerts-wrap" style="padding:16px" id="dash-alerts"></div>
           </div>
         </div>
@@ -112,11 +121,18 @@
             </div>
           </div>
           <table>
-            <thead><tr>
-              <th>#</th><th>Nome do Item</th><th>Categoria</th>
-              <th>Total</th><th>Reservada</th><th>Saldo</th>
-              <th>Disponibilidade</th><th>Ações</th>
-            </tr></thead>
+            <thead>
+              <tr>
+              <th>#</th>
+              <th>Nome do Item</th>
+              <th>Categoria</th>
+              <th>Total</th>
+              <th>Reservada</th>
+              <th>Saldo</th>
+              <th>Disponibilidade</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
             <tbody id="tbody-estoque"></tbody>
           </table>
         </div>
@@ -125,9 +141,18 @@
       <!-- OBRAS -->
       <div class="page" id="page-obras">
         <div class="table-wrap">
-          <div class="table-header"><div class="table-title">Cadastro de Obras</div></div>
+          <div class="table-header">
+            <div class="table-title">Cadastro de Obras</div></div>
           <table>
-            <thead><tr><th>#</th><th>Local da Obra</th><th>Responsável</th><th>Status</th><th>Ações</th></tr></thead>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Local da Obra</th>
+                <th>Responsável</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
             <tbody id="tbody-obras"></tbody>
           </table>
         </div>
@@ -144,7 +169,16 @@
             </div>
           </div>
           <table>
-            <thead><tr><th>Data</th><th>Item</th><th>Qtd</th><th>Tipo</th><th>Obra</th><th>Funcionário</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Item</th>
+                <th>Qtd</th>
+                <th>Tipo</th>
+                <th>Obra</th>
+                <th>Funcionário</th>
+              </tr>
+            </thead>
             <tbody id="tbody-movs"></tbody>
           </table>
         </div>
@@ -155,7 +189,14 @@
         <div class="table-wrap">
           <div class="table-header"><div class="table-title">Cadastro de Funcionários</div></div>
           <table>
-            <thead><tr><th>#</th><th>Nome</th><th>Cargo / Função</th><th>Ações</th></tr></thead>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nome</th>
+                <th>Cargo / Função</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
             <tbody id="tbody-funcs"></tbody>
           </table>
         </div>
@@ -345,28 +386,7 @@ const genId = () => Date.now().toString(36) + Math.random().toString(36).slice(2
 function getAll() { return { estoque:ld(K.e), obras:ld(K.o), movs:ld(K.m), funcs:ld(K.f) }; }
 function setAll(d) { sv(K.e,d.estoque); sv(K.o,d.obras); sv(K.m,d.movs); sv(K.f,d.funcs); }
 
-// ── Dados de exemplo na primeira vez ──
-(function seed() {
-  if (!ld(K.e).length) sv(K.e, [
-    {id:genId(),nome:'Cimento CP-II',      categoria:'Materiais Básicos',total:500,  reservada:0,unidade:'sacos', minimo:50 },
-    {id:genId(),nome:'Tijolo Cerâmico 6F', categoria:'Alvenaria',        total:10000,reservada:0,unidade:'unid',  minimo:500},
-    {id:genId(),nome:'Vergalhão 10mm',     categoria:'Ferragem',         total:300,  reservada:0,unidade:'barras',minimo:30 },
-    {id:genId(),nome:'Areia Média',        categoria:'Agregados',        total:80,   reservada:0,unidade:'m³',   minimo:10 },
-    {id:genId(),nome:'Brita 1',            categoria:'Agregados',        total:60,   reservada:0,unidade:'m³',   minimo:10 },
-  ]);
-  if (!ld(K.o).length) sv(K.o, [
-    {id:genId(),local:'Obra Central – Rua das Flores, 123',  responsavel:'João Silva',    status:'Ativa'  },
-    {id:genId(),local:'Condomínio Bela Vista – Lote 7',      responsavel:'Maria Oliveira',status:'Ativa'  },
-    {id:genId(),local:'Reforma Comercial – Av. Brasil, 450', responsavel:'Carlos Mendes', status:'Pausada'},
-  ]);
-  if (!ld(K.f).length) sv(K.f, [
-    {id:genId(),nome:'João Silva',    cargo:'Gestor de Obras'},
-    {id:genId(),nome:'Maria Oliveira',cargo:'Engenheira Civil'},
-    {id:genId(),nome:'Carlos Mendes', cargo:'Encarregado'    },
-    {id:genId(),nome:'Pedro Alves',   cargo:'Motorista'      },
-    {id:genId(),nome:'Fernanda Costa',cargo:'Almoxarife'     },
-  ]);
-})();
+
 
 // ═══════════════════════════════════════════
 //  EXPORT / IMPORT
