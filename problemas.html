@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Guia de Problemas — EstoqueObras</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    html, body { overflow: auto; height: auto; }
+
+    .hero {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 44px 0 32px; text-align: center; position: relative; overflow: hidden;
+    }
+    .hero::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,var(--red),var(--accent)); }
+    .hero-logo  { font-family:var(--fd); font-size:26px; font-weight:800; color:var(--accent); }
+    .hero-title { font-family:var(--fd); font-size:46px; font-weight:800; margin-top:10px; line-height:1; }
+    .hero-sub   { font-size:15px; color:var(--muted); margin-top:8px; }
+    .back-btn   {
+      display:inline-flex; align-items:center; gap:8px;
+      background:var(--surface2); border:1px solid var(--border);
+      color:var(--text); padding:9px 18px; border-radius:7px;
+      text-decoration:none; font-size:13px; font-weight:600;
+      margin-top:20px; transition:background .15s;
+    }
+    .back-btn:hover { background:var(--border); }
+
+    .container { max-width:860px; margin:0 auto; padding:48px 24px 80px; }
+
+    /* Índice rápido */
+    .index-wrap {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px 24px; margin-bottom: 40px;
+    }
+    .index-title { font-family:var(--fd); font-size:18px; font-weight:700; margin-bottom:14px; }
+    .index-list  { display:flex; flex-direction:column; gap:6px; }
+    .index-item  {
+      display:flex; align-items:center; gap:10px;
+      text-decoration:none; color:var(--muted);
+      font-size:13px; padding:6px 10px; border-radius:6px;
+      transition:all .15s; border:1px solid transparent;
+    }
+    .index-item:hover { color:var(--text); background:var(--surface); border-color:var(--border); }
+    .index-num  { font-family:var(--fd); font-size:15px; font-weight:700; color:var(--accent); min-width:22px; }
+    .index-tag  { margin-left:auto; font-size:11px; padding:2px 8px; border-radius:10px; font-weight:600; }
+    .tag-red    { background:rgba(231,76,60,.15);   color:var(--red); }
+    .tag-yellow { background:rgba(240,165,0,.15);   color:var(--accent); }
+    .tag-blue   { background:rgba(52,152,219,.15);  color:var(--blue); }
+    .tag-green  { background:rgba(46,204,113,.15);  color:var(--green); }
+
+    /* Problema cards */
+    .problem {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden; margin-bottom: 24px;
+    }
+    .problem-header {
+      display:flex; align-items:flex-start; gap:16px;
+      padding: 20px 24px; cursor:pointer; user-select:none;
+      transition:background .15s;
+    }
+    .problem-header:hover { background:var(--surface2); }
+    .problem-icon  { font-size:28px; flex-shrink:0; margin-top:2px; }
+    .problem-info  { flex:1; }
+    .problem-title { font-family:var(--fd); font-size:20px; font-weight:700; line-height:1.2; }
+    .problem-sub   { font-size:12px; color:var(--muted); margin-top:4px; }
+    .problem-badge { padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; white-space:nowrap; }
+    .problem-arrow { font-size:18px; color:var(--muted); transition:transform .2s; margin-top:4px; }
+    .problem.open .problem-arrow { transform: rotate(90deg); }
+
+    .problem-body  { display:none; padding:0 24px 24px; }
+    .problem.open .problem-body { display:block; }
+
+    /* Sintomas */
+    .sintomas {
+      background: rgba(231,76,60,.07); border:1px solid rgba(231,76,60,.2);
+      border-radius:8px; padding:14px 16px; margin-bottom:18px;
+    }
+    .sintomas-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--red); margin-bottom:8px; }
+    .sintomas-list  { list-style:none; display:flex; flex-direction:column; gap:4px; }
+    .sintomas-list li { font-size:13px; color:#d0b0b0; padding-left:16px; position:relative; }
+    .sintomas-list li::before { content:'→'; position:absolute; left:0; color:var(--red); }
+
+    /* Solução steps */
+    .solucao-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--green); margin-bottom:12px; }
+    .steps { display:flex; flex-direction:column; gap:0; }
+    .step  { display:flex; gap:16px; padding:14px 0; border-bottom:1px solid var(--border); }
+    .step:last-child { border-bottom:none; }
+    .step-num  {
+      font-family:var(--fd); font-size:16px; font-weight:800;
+      background:var(--accent); color:#000;
+      width:28px; height:28px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      flex-shrink:0; margin-top:2px;
+    }
+    .step-num.red    { background:var(--red); color:#fff; }
+    .step-num.blue   { background:var(--blue); color:#fff; }
+    .step-num.green  { background:var(--green); color:#000; }
+    .step-body {}
+    .step-title{ font-size:14px; font-weight:600; margin-bottom:4px; }
+    .step-desc { font-size:13px; color:#b0b8d0; line-height:1.6; }
+    .step-desc a { color:var(--accent); text-decoration:none; }
+    .step-desc a:hover { text-decoration:underline; }
+
+    /* Callouts */
+    .callout {
+      border-radius:8px; padding:13px 16px; margin:14px 0;
+      font-size:13px; line-height:1.6; border:1px solid;
+    }
+    .callout strong { font-weight:700; }
+    .c-yellow { background:rgba(240,165,0,.08); border-color:rgba(240,165,0,.25); color:#d4a843; }
+    .c-yellow strong { color:var(--accent); }
+    .c-green  { background:rgba(46,204,113,.08); border-color:rgba(46,204,113,.25); color:#88c9a0; }
+    .c-green  strong { color:var(--green); }
+    .c-red    { background:rgba(231,76,60,.08);  border-color:rgba(231,76,60,.25);  color:#d09090; }
+    .c-red    strong { color:var(--red); }
+    .c-blue   { background:rgba(52,152,219,.08); border-color:rgba(52,152,219,.25); color:#88afd4; }
+    .c-blue   strong { color:var(--blue); }
+
+    code {
+      background:rgba(240,165,0,.12); color:var(--accent);
+      padding:2px 7px; border-radius:3px; font-size:12px; font-family:monospace;
+    }
+    .code-block {
+      background:#0a0d14; border:1px solid var(--border); border-radius:8px;
+      padding:14px 16px; font-family:monospace; font-size:12px;
+      color:#8be08b; line-height:1.8; margin:10px 0; white-space:pre-wrap;
+    }
+
+    /* Separador de secção */
+    .section-sep {
+      display:flex; align-items:center; gap:12px; margin:36px 0 20px;
+    }
+    .section-sep-line { flex:1; height:1px; background:var(--border); }
+    .section-sep-text {
+      font-family:var(--fd); font-size:13px; font-weight:700;
+      letter-spacing:2px; text-transform:uppercase; color:var(--muted);
+    }
+
+    /* Dicas rápidas */
+    .tips-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:16px; }
+    .tip-card  {
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:10px; padding:16px 18px;
+    }
+    .tip-icon  { font-size:24px; margin-bottom:8px; }
+    .tip-title { font-family:var(--fd); font-size:16px; font-weight:700; margin-bottom:6px; }
+    .tip-desc  { font-size:12px; color:var(--muted); line-height:1.6; }
+
+    ::-webkit-scrollbar{width:6px}
+    ::-webkit-scrollbar-track{background:var(--bg)}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-logo">⚡ EstoqueObras</div>
+  <div class="hero-title">🛠️ Guia de Problemas</div>
+  <div class="hero-sub">Todos os erros possíveis e como resolver — passo a passo</div>
+  <a class="back-btn" href="index.html">← Voltar ao Sistema</a>
+</div>
+
+<div class="container">
+
+  <!-- ÍNDICE -->
+  <div class="index-wrap">
+    <div class="index-title">📋 Índice — Clique para ir direto ao problema</div>
+    <div class="index-list">
+      <a class="index-item" href="#p1"><span class="index-num">1</span> Adicionei um item e ele sumiu quando recarreguei <span class="index-tag tag-red">Mais comum</span></a>
+      <a class="index-item" href="#p2"><span class="index-num">2</span> O site abre em branco ou com erro visual <span class="index-tag tag-yellow">Visual</span></a>
+      <a class="index-item" href="#p3"><span class="index-num">3</span> A importação do .json não funcionou <span class="index-tag tag-yellow">Partilha</span></a>
+      <a class="index-item" href="#p4"><span class="index-num">4</span> O chefe abriu o link mas os dados são diferentes <span class="index-tag tag-blue">Partilha</span></a>
+      <a class="index-item" href="#p5"><span class="index-num">5</span> Os botões de Reservar e Saída não aparecem nada nas listas <span class="index-tag tag-yellow">Dados</span></a>
+      <a class="index-item" href="#p6"><span class="index-num">6</span> Apaguei tudo sem querer — como recuperar? <span class="index-tag tag-red">Urgente</span></a>
+      <a class="index-item" href="#p7"><span class="index-num">7</span> O site funciona no computador mas não no telemóvel <span class="index-tag tag-blue">Dispositivo</span></a>
+      <a class="index-item" href="#p8"><span class="index-num">8</span> Mudei de browser e perdi tudo <span class="index-tag tag-red">Dados</span></a>
+      <a class="index-item" href="#p9"><span class="index-num">9</span> A barra de saldo está sempre vermelha mesmo com stock <span class="index-tag tag-yellow">Visual</span></a>
+      <a class="index-item" href="#p10"><span class="index-num">10</span> O GitHub não atualizou o site após eu subir o ficheiro <span class="index-tag tag-blue">GitHub</span></a>
+      <a class="index-item" href="#p11"><span class="index-num">11</span> O site ficou lento ou travou <span class="index-tag tag-green">Performance</span></a>
+      <a class="index-item" href="#p12"><span class="index-num">12</span> Dicas preventivas — evitar problemas antes de acontecerem <span class="index-tag tag-green">Prevenção</span></a>
+    </div>
+  </div>
+
+  <!-- ═══ PROBLEMA 1 ═══ -->
+  <div class="problem open" id="p1">
+    <div class="problem-header" onclick="toggle(this)">
+      <div class="problem-icon">😱</div>
+      <div class="problem-info">
+        <div class="problem-title">Adicionei um item e ele sumiu quando recarreguei</div>
+        <div class="problem-sub">O problema mais comum — responsável por 90% das queixas</div>
+      </div>
+      <span class="problem-badge tag-red">Crítico</span>
+      <div class="problem-arrow">▶</div>
+    </div>
+    <div class="problem-body">
+      <div class="sintomas">
+        <div class="sintomas-title">Sintomas</div>
+        <ul class="sintomas-list">
+          <li>Adiciono um item, aparece na lista, mas ao fechar e abrir o site desaparece</li>
+          <li>As quantidades voltam aos valores anteriores</li>
+          <li>O histórico de movimentações some</li>
+        </ul>
+      </div>
+
+      <div class="callout c-yellow">
+        <strong>🔍 O que está acontecendo:</strong> O sistema guarda os dados no <strong>localStorage do browser</strong>. Se você abriu o site de formas diferentes (ficheiro direto vs GitHub Pages vs outro browser), cada um tem o seu próprio localStorage separado. Os dados ficam num e não aparecem no outro.
+      </div>
+
+      <div class="solucao-title">✅ Como Resolver</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Verifique se está sempre a abrir da mesma forma</div>
+            <div class="step-desc">Escolha UMA forma e use sempre essa. Opções:<br>
+              <strong>Opção A</strong> — Sempre pelo GitHub Pages: <code>seusite.github.io/index.html</code><br>
+              <strong>Opção B</strong> — Sempre pelo ficheiro local: abrir o <code>index.html</code> no computador<br>
+              Nunca misture as duas formas — cada uma tem dados separados!
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Confirme que o script correto está no ficheiro</div>
+            <div class="step-desc">Abra o <code>index.html</code> num editor de texto (VS Code ou Bloco de Notas). Procure por <code>eo2_estoque</code>. Se encontrar essa palavra, está tudo certo — é o sistema novo com localStorage. Se encontrar <code>JSONBin</code> ou <code>cloudWrite</code> em vez disso, o ficheiro é o antigo — substitua pelo novo que foi gerado.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num green">3</div>
+          <div class="step-body">
+            <div class="step-title">Teste: adicione um item e feche o browser completamente</div>
+            <div class="step-desc">Feche o browser (não só o separador) → abra de novo → vá ao Estoque. Se o item estiver lá, está resolvido! Se não estiver, verifique o passo 2 — o ficheiro deve ser o correto.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROBLEMA 2 ═══ -->
+  <div class="problem" id="p2">
+    <div class="problem-header" onclick="toggle(this)">
+      <div class="problem-icon">🎨</div>
+      <div class="problem-info">
+        <div class="problem-title">O site abre em branco ou com erro visual</div>
+        <div class="problem-sub">Tudo preto, sem estilo, ou sem nada na tela</div>
+      </div>
+      <span class="problem-badge tag-yellow">Visual</span>
+      <div class="problem-arrow">▶</div>
+    </div>
+    <div class="problem-body">
+      <div class="sintomas">
+        <div class="sintomas-title">Sintomas</div>
+        <ul class="sintomas-list">
+          <li>O site abre mas parece uma página de texto sem formatação</li>
+          <li>Não há cores, botões ou layout — tudo aparece como texto simples</li>
+          <li>A página fica completamente branca ou preta sem conteúdo</li>
+        </ul>
+      </div>
+
+      <div class="solucao-title">✅ Como Resolver</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Verifique se os 3 ficheiros estão na mesma pasta</div>
+            <div class="step-desc">A causa mais comum de site sem estilo é o <code>styles.css</code> estar noutra pasta. Os 3 ficheiros <strong>têm de estar juntos</strong>:<br><br>
+              <div class="code-block">📁 sua-pasta/
+   ├── index.html
+   ├── styles.css      ← OBRIGATÓRIO aqui
+   └── problemas.html</div>
+              Se moveu o <code>index.html</code> para outra pasta, mova os outros 2 junto.
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">No GitHub: verifique se todos os ficheiros foram enviados</div>
+            <div class="step-desc">Aceda ao seu repositório no GitHub. Veja se existem os 3 ficheiros na raiz: <code>index.html</code>, <code>styles.css</code> e <code>problemas.html</code>. Se o <code>styles.css</code> não estiver lá, faça o upload dele também.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Force o reload da página</div>
+            <div class="step-desc">O browser pode ter guardado uma versão antiga em cache. Prima <strong>Ctrl + Shift + R</strong> (Windows) ou <strong>⌘ + Shift + R</strong> (Mac) para recarregar sem cache. No telemóvel, limpe os dados do site nas definições do browser.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROBLEMA 3 ═══ -->
+  <div class="problem" id="p3">
+    <div class="problem-header" onclick="toggle(this)">
+      <div class="problem-icon">📥</div>
+      <div class="problem-info">
+        <div class="problem-title">A importação do .json não funcionou</div>
+        <div class="problem-sub">Cliquei em importar, escolhi o ficheiro, mas nada mudou</div>
+      </div>
+      <span class="problem-badge tag-yellow">Partilha</span>
+      <div class="problem-arrow">▶</div>
+    </div>
+    <div class="problem-body">
+      <div class="sintomas">
+        <div class="sintomas-title">Sintomas</div>
+        <ul class="sintomas-list">
+          <li>Aparece uma mensagem de erro "Ficheiro inválido"</li>
+          <li>Nenhuma mensagem aparece e os dados não mudam</li>
+          <li>Só alguns dados aparecem após a importação</li>
+        </ul>
+      </div>
+
+      <div class="solucao-title">✅ Como Resolver — verifique cada causa</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num red">!</div>
+          <div class="step-body">
+            <div class="step-title">Causa A — Ficheiro corrompido ou editado</div>
+            <div class="step-desc">Se alguém abriu o ficheiro .json no Word ou Bloco de Notas e guardou, pode ter corrompido o formato. Peça ao colega para exportar de novo sem editar o ficheiro.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num red">!</div>
+          <div class="step-body">
+            <div class="step-title">Causa B — Ficheiro .json de uma versão diferente do sistema</div>
+            <div class="step-desc">O .json deve vir do mesmo sistema. Se tentar importar um ficheiro criado por outro programa, dará erro. O ficheiro exportado deve ter esta estrutura interna:
+              <div class="code-block">{"estoque":[...],"obras":[...],"movs":[...],"funcs":[...]}</div>
+              Abra o ficheiro com o Bloco de Notas e confirme que tem essas 4 palavras no início.
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Solução: exportar de novo e importar directamente</div>
+            <div class="step-desc">No computador que tem os dados certos: vá a <strong>Compartilhar → Exportar .json</strong>. O ficheiro descarrega automaticamente. <strong>Não abra o ficheiro</strong>, apenas envie-o ao colega. O colega faz <strong>Importar .json</strong> e seleciona o ficheiro diretamente — sem abrir antes.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout c-yellow">
+        <strong>⚠️ Atenção:</strong> Importar <strong>substitui todos os dados actuais</strong>. Antes de importar, exporte os seus dados actuais como backup por precaução.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROBLEMA 4 ═══ -->
+  <div class="problem" id="p4">
+    <div class="problem-header" onclick="toggle(this)">
+      <div class="problem-icon">👔</div>
+      <div class="problem-info">
+        <div class="problem-title">O chefe abriu o link mas os dados são diferentes dos meus</div>
+        <div class="problem-sub">Ele vê dados antigos ou um estoque diferente do que você tem</div>
+      </div>
+      <span class="problem-badge tag-blue">Partilha</span>
+      <div class="problem-arrow">▶</div>
+    </div>
+    <div class="problem-body">
+      <div class="sintomas">
+        <div class="sintomas-title">Sintomas</div>
+        <ul class="sintomas-list">
+          <li>O chefe abre o site e vê itens de exemplo (Cimento, Tijolo, Vergalhão) que você já apagou</li>
+          <li>Ele vê os dados certos mas com quantidades antigas</li>
+          <li>Ele não vê nenhum item — o estoque aparece vazio</li>
+        </ul>
+      </div>
+
+      <div class="callout c-blue">
+        <strong>💡 Por que acontece:</strong> O localStorage é <strong>individual por browser e por dispositivo</strong>. O computador do chefe tem o localStorage dele — que começa com os dados de exemplo. Não existe sincronização automática — é um sistema manual de exportar/importar.
+      </div>
+
+      <div class="solucao-title">✅ Como Resolver</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">No SEU computador: exporte os dados actuais</div>
+            <div class="step-desc">Vá a <strong>Compartilhar → Exportar .json</strong>. Um ficheiro como <code>estoque_2025-07-10.json</code> vai descarregar.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Envie o ficheiro ao chefe por WhatsApp ou e-mail</div>
+            <div class="step-desc">Envie o ficheiro .json como anexo. <strong>Não copie o conteúdo</strong> — envie o ficheiro completo.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num green">3</div>
+          <div class="step-body">
+            <div class="step-title">O chefe faz a importação</div>
+            <div class="step-desc">Ele abre o site → vai a <strong>Compartilhar → Importar .json</strong> → seleciona o ficheiro recebido. Pronto — os dados ficam iguais aos seus!</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout c-green">
+        <strong>✅ Dica:</strong> Combine com o seu chefe uma hora fixa (por exemplo toda segunda-feira de manhã) para você exportar e ele importar. Assim ele fica sempre atualizado.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROBLEMA 5 ═══ -->
+  <div class="problem" id="p5">
+    <div class="problem-header" onclick="toggle(this)">
+      <div class="problem-icon">📋</div>
+      <div class="problem-info">
+        <div class="problem-title">Botões de Reservar/Saída não mostram obras ou funcionários</div>
+        <div class="problem-sub">Clico em Reservar, abre o formulário, mas a lista de obras está vazia</div>
+      </div>
+      <span class="problem-badge tag-yellow">Dados</span>
+      <div class="problem-arrow">▶</div>
+    </div>
+    <div class="problem-body">
+      <div class="sintomas">
+        <div class="sintomas-title">Sintomas</div>
+        <ul class="sintomas-list">
+          <li>O campo "Obra" no formulário de Reserva está vazio — sem opções</li>
+          <li>O campo "Funcionário" também está vazio</li>
+          <li>Consigo abrir o formulário mas não consigo confirmar</li>
+        </ul>
+      </div>
+
+      <div class="callout c-yellow">
+        <strong>🔍 Causa:</strong> O formulário de Reserva só mostra obras com status <strong>"Ativa"</strong>. Se não há obras cadastradas, ou todas estão como "Pausada" ou "Concluída", a lista aparece vazia.
+      </div>
+
+      <div class="solucao-title">✅ Como Resolver</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Vá à página Obras e verifique os status</div>
+            <div class="step-desc">Clique em <strong>Obras</strong> no menu. Verifique se existe pelo menos uma obra com status <span style="color:var(--green)">✅ Ativa</span>. Se todas estiverem Pausadas ou Concluídas, edite uma e mude para Ativa.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Se não há nenhuma obra — cadastre uma</div>
+            <div class="step-desc">Vá a <strong>Obras → ＋ Nova Obra</strong>. Preencha o local, responsável e deixe o status como <strong>Ativa</strong>.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Mesmo para Funcionários — verifique se há alguém cadastrado</div>
+            <div class="step-desc">Vá a <strong>Funcionários</strong>. Se a lista estiver vazia, vá a <strong>＋ Novo Funcionário</strong> e adicione pelo menos um nome.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROBLEMA 6 ═══ -->
+  <div class="problem" id="p6">
+    <div class="problem-header" onclick="toggle(this)">
+      <div class="problem-icon">🚨</div>
+      <div class="problem-info">
+        <div class="problem-title">Apaguei tudo sem querer — como recuperar?</div>
+        <div class="problem-sub">Limpei o browser, importei o ficheiro errado ou deletei tudo</div>
+      </div>
+      <span class="problem-badge tag-red">Urgente</span>
+      <div class="problem-arrow">▶</div>
+    </div>
+    <div class="problem-body">
+      <div class="sintomas">
+        <div class="sintomas-title">Sintomas</div>
+        <ul class="sintomas-list">
+          <li>Limpei o histórico do browser e todos os dados sumiram</li>
+          <li>Importei o ficheiro errado e sobrescrevi os dados corretos</li>
+          <li>Fiz "reset" ou limpeza no browser</li>
+        </ul>
+      </div>
+
+      <div class="callout c-red">
+        <strong>⚠️ Realidade:</strong> Se os dados foram apagados do localStorage e não existe um ficheiro .json de backup, <strong>não é possível recuperar automaticamente</strong>. Por isso a exportação regular é fundamental.
+      </div>
+
+      <div class="solucao-title">✅ O que tentar</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num red">!</div>
+          <div class="step-body">
+            <div class="step-title">Verifique se o chefe tem uma versão recente</div>
+            <div class="step-desc">Se o chefe já importou um ficheiro .json da sua última exportação, ele pode reenviar esse ficheiro para você importar de volta. Contacte-o imediatamente.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num red">!</div>
+          <div class="step-body">
+            <div class="step-title">Procure ficheiros .json antigos no computador</div>
+            <div class="step-desc">Abra o gestor de ficheiros e pesquise por <code>estoque_</code>. Os ficheiros exportados têm a data no nome, como <code>estoque_2025-07-01.json</code>. Verifique também a pasta <strong>Downloads</strong> — podem estar lá.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Se não há recuperação — reintroduza os dados manualmente</div>
+            <div class="step-desc">Infelizmente sem backup não há solução técnica. Reintroduza os itens no Estoque, as Obras e os Funcionários manualmente. A partir de agora, faça exportação semanal.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout c-green">
+        <strong>✅ PREVENÇÃO — Faça isso toda semana:</strong><br>
+        Segunda-feira de manhã → abra o site → <strong>Compartilhar → Exportar .json</strong> → guarde o ficheiro numa pasta chamada <code>Backups Estoque</code>. Em 30 segundos você tem um seguro contra qualquer perda.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROBLEMA 7 ═══ -->
+  <div class="problem" id="p7">
+    <div class="problem-header" onclick="toggle(this)">
+      <div class="problem-icon">📱</div>
+      <div class="problem-info">
+        <div class="problem-title">O site funciona no computador mas não no telemóvel</div>
+        <div class="problem-sub">No telemóvel aparece cortado, sem estilo ou com erro</div>
+      </div>
+      <span class="problem-badge tag-blue">Dispositivo</span>
+      <div class="problem-arrow">▶</div>
+    </div>
+    <div class="problem-body">
+      <div class="sintomas">
+        <div class="sintomas-title">Sintomas</div>
+        <ul class="sintomas-list">
+          <li>A tabela aparece cortada ou ultrapassa o ecrã</li>
+          <li>Os botões ficam sobrepostos ou inacessíveis</li>
+          <li>O site carrega mas não tem o estilo visual correto</li>
+        </ul>
+      </div>
+
+      <div class="solucao-title">✅ Como Resolver</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">No telemóvel, use o Chrome ou Edge — evite browsers alternativos</div>
+            <div class="step-desc">Browsers como UC Browser, Opera Mini ou browser nativo de alguns telemóveis têm limitações no localStorage. Use <strong>Google Chrome</strong> no Android ou <strong>Safari</strong> no iPhone.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Aceda sempre pelo link do GitHub Pages — não pelo ficheiro local</div>
+            <div class="step-desc">No telemóvel não consegue abrir um ficheiro local. Use o link do GitHub Pages: <code>seusite.github.io</code>. Se não tem o link, aceda pelo computador e copie o endereço.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Gire o telemóvel para horizontal se a tabela estiver cortada</div>
+            <div class="step-desc">As tabelas têm muitas colunas e ficam melhor em ecrã horizontal (paisagem). Gire o telemóvel ou use num tablet.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout c-blue">
+        <strong>💡 Nota importante:</strong> Os dados do telemóvel e do computador são <strong>separados</strong>. Se adicionar algo no telemóvel, não aparece no computador automaticamente — tem de exportar e importar como habitualmente.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROBLEMA 8 ═══ -->
+  <div class="problem" id="p8">
+    <div class="problem-header" onclick="toggle(this)">
+      <div class="problem-icon">🌐</div>
+      <div class="problem-info">
+        <div class="problem-title">Mudei de browser e perdi tudo</div>
+        <div class="problem-sub">Usava Chrome, passei para Edge (ou Firefox) e o estoque está vazio</div>
+      </div>
+      <span class="problem-badge tag-red">Dados</span>
+      <div class="problem-arrow">▶</div>
+    </div>
+    <div class="problem-body">
+      <div class="sintomas">
+        <div class="sintomas-title">Sintomas</div>
+        <ul class="sintomas-list">
+          <li>No browser novo o estoque aparece com os dados de exemplo (Cimento, Tijolo…)</li>
+          <li>Todo o histórico de movimentações sumiu</li>
+          <li>Tenho de reintroduzir tudo</li>
+        </ul>
+      </div>
+
+      <div class="callout c-yellow">
+        <strong>🔍 Por que acontece:</strong> Cada browser tem o seu próprio localStorage completamente separado. Chrome, Edge, Firefox e Safari <strong>não partilham dados entre si</strong>, mesmo no mesmo computador.
+      </div>
+
+      <div class="solucao-title">✅ Como Resolver</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Volte ao browser antigo e exporte os dados</div>
+            <div class="step-desc">Abra o Chrome (ou o browser que usava antes) → abra o site → <strong>Compartilhar → Exportar .json</strong>. Guarde o ficheiro.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">No browser novo, importe o ficheiro</div>
+            <div class="step-desc">Abra o site no novo browser → <strong>Compartilhar → Importar .json</strong> → selecione o ficheiro que exportou. Os dados aparecem imediatamente.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num green">3</div>
+          <div class="step-body">
+            <div class="step-title">Escolha UM browser e use sempre esse</div>
+            <div class="step-desc">A partir de agora, defina um browser principal para o sistema. Recomendamos o <strong>Google Chrome</strong> por ser o mais estável com localStorage.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROBLEMA 9 ═══ -->
+  <div class="problem" id="p9">
+    <div class="problem-header" onclick="toggle(this)">
+      <div class="problem-icon">🔴</div>
+      <div class="problem-info">
+        <div class="problem-title">A barra de saldo está sempre vermelha mesmo com stock</div>
+        <div class="problem-sub">Tenho 500 sacos mas a barra mostra vermelho ou "Baixo"</div>
+      </div>
+      <span class="problem-badge tag-yellow">Visual</span>
+      <div class="problem-arrow">▶</div>
+    </div>
+    <div class="problem-body">
+      <div class="sintomas">
+        <div class="sintomas-title">Sintomas</div>
+        <ul class="sintomas-list">
+          <li>A barra aparece vermelha mesmo com bastante stock disponível</li>
+          <li>Aparece o badge "⚠️ Baixo" mas o saldo parece suficiente</li>
+          <li>O Dashboard mostra alertas de saldo baixo que parecem errados</li>
+        </ul>
+      </div>
+
+      <div class="callout c-yellow">
+        <strong>🔍 Causa:</strong> O campo <strong>Saldo Mínimo</strong> foi configurado com um valor muito alto. Por exemplo, se definiu mínimo = 600 e tem 500 em stock, o sistema considera "baixo" porque está abaixo de 600.
+      </div>
+
+      <div class="solucao-title">✅ Como Resolver</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Edite o item e corrija o Saldo Mínimo</div>
+            <div class="step-desc">Na tabela do Estoque, clique em ✏️ no item com o alerta errado. Veja o campo <strong>Saldo Mínimo</strong>. Coloque um valor que faça sentido — por exemplo, se tem 500 sacos e só se preocupa quando chegar a 50, coloque <strong>50</strong> nesse campo.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Se não quer alertas, coloque 0</div>
+            <div class="step-desc">Se deixar o Saldo Mínimo como <strong>0</strong>, o sistema nunca vai gerar alertas para aquele item. O badge vai aparecer como <span style="color:var(--green)">✅ OK</span> sempre.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout c-blue">
+        <strong>💡 Como funciona o sistema de cores:</strong><br>
+        🟢 Verde — saldo acima de 50% do total<br>
+        🟡 Amarelo — saldo entre 20% e 50% do total<br>
+        🔴 Vermelho — saldo abaixo de 20% do total OU abaixo do mínimo definido
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROBLEMA 10 ═══ -->
+  <div class="problem" id="p10">
+    <div class="problem-header" onclick="toggle(this)">
+      <div class="problem-icon">🐙</div>
+      <div class="problem-info">
+        <div class="problem-title">O GitHub não atualizou o site após subir o ficheiro</div>
+        <div class="problem-sub">Fiz o upload do index.html novo mas o site ainda mostra o antigo</div>
+      </div>
+      <span class="problem-badge tag-blue">GitHub</span>
+      <div class="problem-arrow">▶</div>
+    </div>
+    <div class="problem-body">
+      <div class="sintomas">
+        <div class="sintomas-title">Sintomas</div>
+        <ul class="sintomas-list">
+          <li>Fiz o commit e push mas o site ainda mostra a versão antiga</li>
+          <li>O GitHub Pages demora a atualizar</li>
+          <li>O repositório tem o ficheiro novo mas o site não mudou</li>
+        </ul>
+      </div>
+
+      <div class="solucao-title">✅ Como Resolver</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Aguarde 1 a 3 minutos — o GitHub Pages tem um delay</div>
+            <div class="step-desc">Após fazer push, o GitHub Pages precisa de tempo para reconstruir o site. Espere 2-3 minutos antes de verificar. É normal — não é erro.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Force o reload no browser — Ctrl + Shift + R</div>
+            <div class="step-desc">O browser pode estar a mostrar a versão em cache. Prima <strong>Ctrl + Shift + R</strong> para forçar o download da versão nova do servidor.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Verifique o estado do deploy no GitHub</div>
+            <div class="step-desc">No GitHub, vá ao repositório → clique em <strong>Actions</strong> (menu de topo). Veja se há um deploy a correr (círculo amarelo) ou com erro (círculo vermelho). Se houver erro, clique nele para ver o detalhe.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">Confirme que o branch correto está configurado no Pages</div>
+            <div class="step-desc">No repositório → <strong>Settings → Pages</strong>. Verifique se em "Branch" está selecionado <strong>main</strong> (ou <strong>master</strong>) e a pasta <strong>/ (root)</strong>. Se estiver diferente, corrija e guarde.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROBLEMA 11 ═══ -->
+  <div class="problem" id="p11">
+    <div class="problem-header" onclick="toggle(this)">
+      <div class="problem-icon">🐌</div>
+      <div class="problem-info">
+        <div class="problem-title">O site ficou lento ou travou</div>
+        <div class="problem-sub">As páginas demoram a carregar ou os botões não respondem</div>
+      </div>
+      <span class="problem-badge tag-green">Performance</span>
+      <div class="problem-arrow">▶</div>
+    </div>
+    <div class="problem-body">
+      <div class="sintomas">
+        <div class="sintomas-title">Sintomas</div>
+        <ul class="sintomas-list">
+          <li>O site demora mais de 2 segundos a responder aos cliques</li>
+          <li>A tabela do Estoque demora a aparecer</li>
+          <li>O browser fica lento quando o site está aberto</li>
+        </ul>
+      </div>
+
+      <div class="callout c-yellow">
+        <strong>🔍 Causa mais comum:</strong> Muitos registos de Movimentações acumulados. O sistema guarda cada saída e reserva individualmente — com milhares de entradas, a tabela pode ficar pesada.
+      </div>
+
+      <div class="solucao-title">✅ Como Resolver</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Exporte os dados como arquivo antes de limpar</div>
+            <div class="step-desc"><strong>Compartilhar → Exportar .json</strong>. Guarde como backup histórico. Este ficheiro tem todo o historial.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Limpe o histórico de movimentações antigas</div>
+            <div class="step-desc">Abra as Ferramentas de Desenvolvimento do browser (<strong>F12</strong>) → vá à aba <strong>Console</strong> → escreva este comando e prima Enter:
+              <div class="code-block">localStorage.setItem('eo2_movs', '[]')</div>
+              Isto apaga apenas o histórico de movimentações, mantendo o estoque, obras e funcionários intatos. Recarregue a página.
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num green">3</div>
+          <div class="step-body">
+            <div class="step-title">Para lentidão geral do browser</div>
+            <div class="step-desc">Feche outros separadores do browser, reinicie o computador, ou use o modo anónimo para testar se é problema do site ou do browser.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROBLEMA 12 — PREVENÇÃO ═══ -->
+  <div class="section-sep">
+    <div class="section-sep-line"></div>
+    <div class="section-sep-text">Prevenção</div>
+    <div class="section-sep-line"></div>
+  </div>
+
+  <div class="problem" id="p12">
+    <div class="problem-header" onclick="toggle(this)">
+      <div class="problem-icon">🛡️</div>
+      <div class="problem-info">
+        <div class="problem-title">Dicas preventivas — evite problemas antes de acontecerem</div>
+        <div class="problem-sub">Boas práticas para nunca perder dados nem ter surpresas</div>
+      </div>
+      <span class="problem-badge tag-green">Prevenção</span>
+      <div class="problem-arrow">▶</div>
+    </div>
+    <div class="problem-body">
+      <div class="tips-grid">
+        <div class="tip-card">
+          <div class="tip-icon">📅</div>
+          <div class="tip-title">Export semanal obrigatório</div>
+          <div class="tip-desc">Todo início de semana: <strong>Compartilhar → Exportar .json</strong>. Guarde numa pasta "Backups Estoque" com a data. Em caso de perda, você recupera no máximo uma semana de dados.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">🌐</div>
+          <div class="tip-title">Use sempre o mesmo browser</div>
+          <div class="tip-desc">Escolha <strong>Google Chrome</strong> como browser oficial do sistema. Nunca mude para Edge, Firefox ou Safari no dia a dia — os dados ficam presos em cada um.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">🔗</div>
+          <div class="tip-title">Guarde o link como favorito</div>
+          <div class="tip-desc">Abra <code>seusite.github.io#estoque</code> → prima <strong>Ctrl+D</strong> → guarde na barra de favoritos. Um clique e está direto no estoque, sem digitar nada.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">🚫</div>
+          <div class="tip-title">Nunca limpe "todos os dados" do browser</div>
+          <div class="tip-desc">Quando limpar o histórico do browser, <strong>desmarque a opção "Dados do site" ou "localStorage"</strong>. Só apague histórico de navegação e cache — nunca os dados do site.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">📤</div>
+          <div class="tip-title">Export antes de qualquer importação</div>
+          <div class="tip-desc">Antes de importar um ficheiro do chefe, <strong>sempre exporte primeiro</strong> os seus dados. Assim se a importação correr mal, pode recuperar o que tinha.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">📂</div>
+          <div class="tip-title">Mantenha os 3 ficheiros juntos</div>
+          <div class="tip-desc">Se precisar mover ou copiar o site, mova sempre os 3 juntos: <code>index.html</code>, <code>styles.css</code> e <code>problemas.html</code>. Nunca um sem os outros.</div>
+        </div>
+      </div>
+
+      <div class="callout c-green" style="margin-top:20px">
+        <strong>✅ Rotina recomendada — 2 minutos por semana:</strong><br><br>
+        🗓️ <strong>Segunda de manhã:</strong> Abrir o site → Compartilhar → Exportar → Guardar na pasta Backups<br>
+        📤 <strong>Ao fazer alterações grandes:</strong> Exportar e enviar ao chefe para ele importar<br>
+        🔍 <strong>Uma vez por mês:</strong> Verificar se o GitHub Pages está online e a carregar correctamente
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:24px 0">
+    <a class="back-btn" href="index.html" style="font-size:15px;padding:13px 28px">← Voltar ao Sistema</a>
+  </div>
+
+</div>
+
+<script>
+function toggle(header) {
+  const problem = header.parentElement;
+  problem.classList.toggle('open');
+}
+// Fechar todos excepto o primeiro ao carregar
+document.querySelectorAll('.problem').forEach((p, i) => {
+  if (i !== 0) p.classList.remove('open');
+});
+// Scroll suave para âncoras
+document.querySelectorAll('.index-item').forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(link.getAttribute('href'));
+    if (!target) return;
+    target.classList.add('open');
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+</script>
+</body>
+</html>
