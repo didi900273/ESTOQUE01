@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ELETROGUARA 67</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Select de Unidade de Medida ── */
+    .estilo-select {
+      width: 100%;
+      padding: 10px;
+      background-color: #2c2c2c;
+      color: white;
+      border: 1px solid #444;
+      border-radius: 5px;
+      cursor: pointer;
+      outline: none;
+      margin-top: 5px;
+    }
+    .estilo-select:focus {
+      border-color: #007bff;
+    }
+    .estilo-select option {
+      background-color: #2c2c2c;
+      color: white;
+    }
+
+    /* ── Localização de Prateleira ── */
+    .loc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+    .loc-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #1a1a2e;
+      border: 1px solid #3a3a5c;
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-family: monospace;
+      font-size: 12px;
+      color: #a78bfa;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    .loc-badge span {
+      color: #6b7280;
+      font-weight: normal;
+    }
+  </style>
+</head>
+<body>
+
+
+<!-- ════════════════════════════════════════════════════
+     TELA DE CONFIGURAÇÃO (primeira vez)
+════════════════════════════════════════════════════ -->
+<div id="setup-screen">
+  <div class="setup-box">
+
+    <div class="setup-top">
+      <div class="setup-logo">⚡ CHAVE PARA LOGIN</div>
+      <div class="setup-title">Configuração inicial</div>
+      <div class="setup-desc">
+        Para que o sistema seja <strong>partilhado</strong> entre você e os outros funcionários,
+        os dados ficam guardados na nuvem.<br>
+        Siga os 3 passos abaixo — para entrar.
+      </div>
+    </div>
+
+    <div class="setup-body">
+      <div class="setup-steps">
+        <div class="setup-step">
+          <div class="setup-step-num">1</div>
+          <div class="setup-step-text">
+            Aceda a <a href="https://jsonbin.io" target="_blank">jsonbin.io</a> e crie uma conta gratuita.
+          </div>
+        </div>
+        <div class="setup-step">
+          <div class="setup-step-num">2</div>
+          <div class="setup-step-text">
+            No painel, vá em <strong>API Keys → Create Access Key</strong>
+            e copie a chave que começa com
+            <code>$2a$10$3vNPatmkURPA4dZ3Gtcmaed8Qx5kdV77pYMaJha7BdFPHvUwp6El6</code>
+          </div>
+        </div>
+        <div class="setup-step">
+          <div class="setup-step-num">3</div>
+          <div class="setup-step-text">
+            Cole a chave abaixo e clique em <strong>Criar e Ligar</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">🔑 API Key do JSONBin</label>
+        <input class="form-control" id="setup-key"
+               placeholder="$2b$10$xxxxxxxxxxxxxxxxxxxxxxx"
+               style="font-family:monospace;font-size:13px;"/>
+      </div>
+
+      <div id="setup-bin-group" class="form-group" style="display:none">
+        <label class="form-label">📋 Bin ID (já tenho um)</label>
+        <input class="form-control" id="setup-bin"
+               placeholder="Cole aqui se já tiver um Bin ID de outro dispositivo"
+               style="font-family:monospace;font-size:13px;"/>
+        <small style="color:var(--muted);font-size:11px">
+          Deixe em branco para criar um novo · Cole o ID do seu chefe para ligar ao mesmo estoque
+        </small>
+      </div>
+    </div>
+
+    <div class="setup-footer">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+        <button class="btn btn-ghost btn-sm" onclick="toggleBinGroup()">
+          Já tenho um Bin ID
+        </button>
+        <button class="btn btn-primary" id="setup-btn" onclick="setupConnect()">
+          ⚡ Ligar Sistema
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════
+     LOADING OVERLAY
+════════════════════════════════════════════════════ -->
+<div class="loading-overlay" id="loading">
+  <div class="loading-spinner"></div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════
+     APLICAÇÃO PRINCIPAL
+════════════════════════════════════════════════════ -->
+<div class="app" id="main-app" style="display:none">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-title">⚡ ESTOQUE ELETROGUARA ⚡</div>
+      <div class="logo-sub">Gestão de Estoque</div>
+      <div class="logo-sync">
+        <div class="sync-dot" id="sync-dot"></div>
+        <span id="sync-label">Sincronizado</span>
+      </div>
+    </div>
+
+    <nav>
+      <div class="nav-section">Principal</div>
+      <a class="nav-item" href="#dashboard"><span class="icon">📊</span> Dashboard</a>
+
+      <div class="nav-section">Gestão</div>
+      <a class="nav-item" href="#estoque"><span class="icon">📦</span> Estoque</a>
+      <a class="nav-item" href="#obras"><span class="icon">🏗️</span> Obras</a>
+      <a class="nav-item" href="#movimentacoes"><span class="icon">🔄</span> Movimentações</a>
+      <a class="nav-item" href="#funcionarios"><span class="icon">👷</span> Funcionários</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div style="font-size:11px;color:var(--muted)">Bin ID (partilhar):</div>
+      <div id="bin-id-display"
+           style="font-family:monospace;font-size:10px;color:var(--accent);word-break:break-all;cursor:pointer"
+           onclick="copyBinId()"
+           title="Clique para copiar">—</div>
+      <div class="sidebar-config-btn" onclick="resetConfig()">⚙️ Reconfigurar / Trocar conta</div>
+    </div>
+  </aside>
+
+  <!-- ── Área Principal ── -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="page-title" id="topTitle">Dashboard</div>
+      <div class="topbar-actions" id="topActions">
+        <div class="sync-status" id="sync-status">
+          <span id="sync-icon">🟢</span>
+          <span id="sync-text">Online</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ── Página: Dashboard ── -->
+      <div class="page" id="page-dashboard">
+        <div class="cards-row">
+          <div class="card c-yellow">
+            <div class="card-label">Itens no Estoque</div>
+            <div class="card-value" id="d-itens">0</div>
+            <div class="card-sub">tipos de material</div>
+            <div class="card-icon">📦</div>
+          </div>
+          <div class="card c-green">
+            <div class="card-label">Obras Ativas</div>
+            <div class="card-value" id="d-obras">0</div>
+            <div class="card-sub">em andamento</div>
+            <div class="card-icon">🏗️</div>
+          </div>
+          <div class="card c-blue">
+            <div class="card-label">Movimentações</div>
+            <div class="card-value" id="d-movs">0</div>
+            <div class="card-sub">total registadas</div>
+            <div class="card-icon">🔄</div>
+          </div>
+          <div class="card c-red">
+            <div class="card-label">Alertas</div>
+            <div class="card-value" id="d-alerts">0</div>
+            <div class="card-sub">saldo baixo</div>
+            <div class="card-icon">⚠️</div>
+          </div>
+        </div>
+
+        <div class="dash-grid">
+          <div class="table-wrap">
+            <div class="table-header">
+              <div class="table-title">Últimas Movimentações</div>
+            </div>
+            <div class="activity-list" id="dash-activity"></div>
+          </div>
+          <div class="table-wrap">
+            <div class="table-header">
+              <div class="table-title">⚠️ Saldo Baixo</div>
+            </div>
+            <div class="alerts-wrap" style="padding:16px" id="dash-alerts"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Página: Estoque ── -->
+      <div class="page" id="page-estoque">
+        <div class="table-wrap">
+          <div class="table-header">
+            <div class="table-title">Inventário de Materiais</div>
+            <div class="search-box">
+              <span>🔍</span>
+              <input type="text" placeholder="Pesquisar..." id="search-estoque" oninput="renderEstoque()"/>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nome do Item</th>
+                <th>Categoria</th>
+                <th>📍 Localização</th>
+                <th>Total</th>
+                <th>Reservada</th>
+                <th>Saldo</th>
+                <th>Disponibilidade</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-estoque"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Página: Obras ── -->
+      <div class="page" id="page-obras">
+        <div class="table-wrap">
+          <div class="table-header">
+            <div class="table-title">Cadastro de Obras</div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Local da Obra</th>
+                <th>Responsável</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-obras"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Página: Movimentações ── -->
+      <div class="page" id="page-movimentacoes">
+        <div class="table-wrap">
+          <div class="table-header">
+            <div class="table-title">Histórico de Movimentações</div>
+            <div class="search-box">
+              <span>🔍</span>
+              <input type="text" placeholder="Pesquisar..." id="search-movs" oninput="renderMovs()"/>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Item</th>
+                <th>Qtd</th>
+                <th>Unidade</th>
+                <th>📍 Local</th>
+                <th>Tipo</th>
+                <th>Obra</th>
+                <th>Funcionário</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-movs"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Página: Funcionários ── -->
+      <div class="page" id="page-funcionarios">
+        <div class="table-wrap">
+          <div class="table-header">
+            <div class="table-title">Cadastro de Funcionários</div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nome</th>
+                <th>Cargo / Função</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-funcs"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+
+<!-- ════════════════════════════════════════════════════
+     MODAIS
+════════════════════════════════════════════════════ -->
+
+<!-- ── Modal: Novo / Editar Item ── -->
+<div class="modal-overlay" id="modal-item">
+  <div class="modal">
+    <div class="modal-top">
+      <div class="modal-title" id="modal-item-title">Novo Item</div>
+      <button class="btn-icon" onclick="closeModal('modal-item')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="item-id"/>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Nome do Item *</label>
+          <input class="form-control" id="item-nome" placeholder="Ex: CABO 2,5mm²"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Categoria *</label>
+          <input class="form-control" id="item-cat" placeholder="Ex: Materiais Básicos"/>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Quantidade Total *</label>
+          <input class="form-control" type="number" id="item-qtd" placeholder="0" min="0"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Unidade de Medida *</label>
+          <select class="form-control estilo-select" id="item-unidade">
+            <option value="">— Selecione —</option>
+            <option value="UN">Unidade (UN)</option>
+            <option value="KG">Quilograma (KG)</option>
+            <option value="MTS">Metros (MTS)</option>
+            <option value="M²">Metro Quadrado (M²)</option>
+            <option value="MM²">Milímetro Quadrado (MM²)</option>
+            <option value="CM">Centímetro (CM)</option>
+            <option value="CX">Caixa (CX)</option>
+            <option value="LT">Litro (LT)</option>
+            <option value="ROLO">Rolo (ROLO)</option>
+            <option value="PC">Peça (PC)</option>
+            <option value="GL">Galão (GL)</option>
+            <option value="TON">Tonelada (TON)</option>
+            <option value="M³">Metro Cúbico (M³)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Saldo Mínimo (alerta)</label>
+        <input class="form-control" type="number" id="item-minimo" placeholder="Ex: 50" min="0"/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">📍 Localização na Prateleira</label>
+        <div class="loc-grid">
+          <div>
+            <label class="form-label" style="font-size:11px;color:var(--muted)">Bloco (A–E)</label>
+            <select class="form-control estilo-select" id="item-loc-bloco">
+              <option value="">—</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+              <option value="D">D</option>
+              <option value="E">E</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" style="font-size:11px;color:var(--muted)">Seção (X–Z)</label>
+            <select class="form-control estilo-select" id="item-loc-secao">
+              <option value="">—</option>
+              <option value="X">X</option>
+              <option value="Y">Y</option>
+              <option value="Z">Z</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" style="font-size:11px;color:var(--muted)">Nível (01–05)</label>
+            <select class="form-control estilo-select" id="item-loc-nivel">
+              <option value="">—</option>
+              <option value="01">01</option>
+              <option value="02">02</option>
+              <option value="03">03</option>
+              <option value="04">04</option>
+              <option value="05">05</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-item')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveItem()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Reservar Material ── -->
+<div class="modal-overlay" id="modal-reserva">
+  <div class="modal">
+    <div class="modal-top">
+      <div class="modal-title">📋 Reservar Material</div>
+      <button class="btn-icon" onclick="closeModal('modal-reserva')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="reserva-item-id"/>
+
+      <div class="form-group">
+        <label class="form-label">Item</label>
+        <input class="form-control" id="reserva-item-nome" readonly/>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Saldo Disponível</label>
+          <input class="form-control" id="reserva-saldo" readonly/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Qtd a Reservar *</label>
+          <input class="form-control" type="number" id="reserva-qtd" placeholder="0" min="1"/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Obra *</label>
+        <select class="form-control" id="reserva-obra"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Funcionário *</label>
+        <select class="form-control" id="reserva-func"></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-reserva')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarReserva()">📋 Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Registar Saída ── -->
+<div class="modal-overlay" id="modal-saida">
+  <div class="modal">
+    <div class="modal-top">
+      <div class="modal-title">🚚 Registar Saída</div>
+      <button class="btn-icon" onclick="closeModal('modal-saida')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="saida-item-id"/>
+
+      <div class="form-group">
+        <label class="form-label">Item</label>
+        <input class="form-control" id="saida-item-nome" readonly/>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Total Atual</label>
+          <input class="form-control" id="saida-total" readonly/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quantidade de Saída *</label>
+          <input class="form-control" type="number" id="saida-qtd" placeholder="0" min="1"/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Obra *</label>
+        <select class="form-control" id="saida-obra"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Quem Levou *</label>
+        <select class="form-control" id="saida-func"></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-saida')">Cancelar</button>
+      <button class="btn btn-success" onclick="confirmarSaida()">🚚 Confirmar Saída</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Nova / Editar Obra ── -->
+<div class="modal-overlay" id="modal-obra">
+  <div class="modal">
+    <div class="modal-top">
+      <div class="modal-title" id="modal-obra-title">Nova Obra</div>
+      <button class="btn-icon" onclick="closeModal('modal-obra')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="obra-id"/>
+
+      <div class="form-group">
+        <label class="form-label">Local da Obra *</label>
+        <input class="form-control" id="obra-local" placeholder="Endereço completo"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Responsável *</label>
+        <input class="form-control" id="obra-resp" placeholder="Nome do responsável"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="form-control" id="obra-status">
+          <option value="Ativa">Ativa</option>
+          <option value="Pausada">Pausada</option>
+          <option value="Concluída">Concluída</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-obra')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveObra()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Novo / Editar Funcionário ── -->
+<div class="modal-overlay" id="modal-func">
+  <div class="modal">
+    <div class="modal-top">
+      <div class="modal-title" id="modal-func-title">Novo Funcionário</div>
+      <button class="btn-icon" onclick="closeModal('modal-func')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="func-id"/>
+
+      <div class="form-group">
+        <label class="form-label">Nome *</label>
+        <input class="form-control" id="func-nome" placeholder="Nome completo"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cargo / Função</label>
+        <input class="form-control" id="func-cargo" placeholder="Ex: Motorista, Encarregado..."/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-func')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveFunc()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Notificações Toast -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+
+<!-- ════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════ -->
+<script>
+
+// ═══════════════════════════════════════════════════════
+//  1. CONFIGURAÇÃO DA NUVEM — JSONBin.io
+// ═══════════════════════════════════════════════════════
+
+const CFG_KEY  = 'eo_cfg';
+const API_URL  = 'https://api.jsonbin.io/v3/b';
+
+let DB       = null;   // dados em memória
+let isSaving = false;
+
+/** Lê a configuração salva no localStorage */
+function getCfg() {
+  try { return JSON.parse(localStorage.getItem(CFG_KEY)) || {}; }
+  catch { return {}; }
+}
+
+/** Salva a configuração no localStorage */
+function setCfg(obj) {
+  localStorage.setItem(CFG_KEY, JSON.stringify(obj));
+}
+
+/** Lê os dados do bin na nuvem */
+async function cloudRead(apiKey, binId) {
+  const res = await fetch(`${API_URL}/${binId}/latest`, {
+    headers: { 'X-Master-Key': apiKey }
+  });
+  if (!res.ok) throw new Error('Erro ao ler: ' + res.status);
+  const json = await res.json();
+  return json.record;
+}
+
+/** Grava os dados no bin na nuvem */
+async function cloudWrite(apiKey, binId, data) {
+  const res = await fetch(`${API_URL}/${binId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': apiKey },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error('Erro ao gravar: ' + res.status);
+}
+
+/** Cria um novo bin na nuvem */
+async function cloudCreate(apiKey, data) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Master-Key': apiKey,
+      'X-Bin-Private': 'false'
+    },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error('Erro ao criar bin: ' + res.status);
+  const json = await res.json();
+  return json.metadata.id;
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  2. SETUP E INICIALIZAÇÃO
+// ═══════════════════════════════════════════════════════
+
+/** Exibe/oculta campo de Bin ID existente */
+function toggleBinGroup() {
+  const el = document.getElementById('setup-bin-group');
+  el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+}
+
+/** Conecta ao sistema pela primeira vez */
+async function setupConnect() {
+  const apiKey = document.getElementById('setup-key').value.trim();
+  const binId  = document.getElementById('setup-bin').value.trim();
+
+  if (!apiKey) { toast('Introduza a API Key', 'error'); return; }
+
+  const btn = document.getElementById('setup-btn');
+  btn.disabled    = true;
+  btn.textContent = '⏳ A ligar...';
+
+  try {
+    let finalBinId = binId;
+
+    if (!binId) {
+      finalBinId = await cloudCreate(apiKey, defaultData());
+      toast('✅ Base de dados criada! Bin ID: ' + finalBinId);
+    }
+
+    DB = await cloudRead(apiKey, finalBinId);
+    setCfg({ apiKey, binId: finalBinId });
+    launchApp(finalBinId);
+
+  } catch (e) {
+    toast('Erro: ' + e.message + '. Verifique a API Key.', 'error');
+    btn.disabled    = false;
+    btn.textContent = '⚡ Criar e Ligar';
+  }
+}
+
+/** Dados padrão ao criar um novo bin */
+function defaultData() {
+  return {
+    estoque: [
+      { id: genId(), nome: 'Cabo PP 2,5mm²',      categoria: 'Cabos',            total: 500,   reservada: 0, unidade: 'MTS',  minimo: 50  },
+      { id: genId(), nome: 'Disjuntor 20A',        categoria: 'Proteção',         total: 100,   reservada: 0, unidade: 'UN',   minimo: 10  },
+      { id: genId(), nome: 'Eletroduto 3/4"',      categoria: 'Eletrodutos',      total: 300,   reservada: 0, unidade: 'MTS',  minimo: 30  },
+      { id: genId(), nome: 'Fita Isolante',        categoria: 'Materiais Básicos',total: 200,   reservada: 0, unidade: 'UN',   minimo: 20  },
+    ],
+    obras: [
+      { id: genId(), local: 'Obra Central – Rua das Flores, 123', responsavel: 'João Silva',   status: 'Ativa' },
+      { id: genId(), local: 'Condomínio Bela Vista – Lote 7',     responsavel: 'Maria Oliveira', status: 'Ativa' },
+    ],
+    movs:  [],
+    funcs: [
+      { id: genId(), nome: 'João Silva',    cargo: 'Gestor de Obras' },
+      { id: genId(), nome: 'Pedro Alves',   cargo: 'Motorista'       },
+      { id: genId(), nome: 'Fernanda Costa',cargo: 'Almoxarife'      },
+    ]
+  };
+}
+
+/** Inicializa o app após login bem-sucedido */
+function launchApp(binId) {
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('main-app').style.display     = 'flex';
+  document.getElementById('bin-id-display').textContent = binId;
+  applyPage(getCurrentPage());
+  setSyncStatus('ok');
+}
+
+/** Reinicia a configuração (logout) */
+function resetConfig() {
+  if (!confirm('Isto vai desligar esta conta. Os dados na nuvem ficam guardados. Continuar?')) return;
+  localStorage.removeItem(CFG_KEY);
+  location.reload();
+}
+
+/** Init automático ao carregar a página */
+(async function init() {
+  const cfg = getCfg();
+  if (!cfg.apiKey || !cfg.binId) return; // mostra tela de setup
+
+  try {
+    document.getElementById('loading').classList.add('show');
+    DB = await cloudRead(cfg.apiKey, cfg.binId);
+    document.getElementById('loading').classList.remove('show');
+    launchApp(cfg.binId);
+  } catch (e) {
+    document.getElementById('loading').classList.remove('show');
+    toast('Não foi possível ligar à nuvem. Reconfigure.', 'error');
+  }
+})();
+
+
+// ═══════════════════════════════════════════════════════
+//  3. SINCRONIZAÇÃO COM A NUVEM
+// ═══════════════════════════════════════════════════════
+
+/** Salva DB na nuvem */
+async function syncSave() {
+  if (isSaving) return;
+  isSaving = true;
+  setSyncStatus('saving');
+
+  const cfg = getCfg();
+  try {
+    await cloudWrite(cfg.apiKey, cfg.binId, DB);
+    setSyncStatus('ok');
+  } catch (e) {
+    setSyncStatus('error');
+    toast('Erro ao guardar na nuvem: ' + e.message, 'error');
+  }
+  isSaving = false;
+}
+
+/** Recarrega DB da nuvem */
+async function syncLoad() {
+  const cfg = getCfg();
+  try {
+    DB = await cloudRead(cfg.apiKey, cfg.binId);
+    setSyncStatus('ok');
+    renderPage(getCurrentPage());
+  } catch (e) {
+    setSyncStatus('error');
+  }
+}
+
+/** Atualiza ícone de status de sincronização */
+function setSyncStatus(s) {
+  const icon = document.getElementById('sync-icon');
+  const text = document.getElementById('sync-text');
+  const dot  = document.getElementById('sync-dot');
+  if (!icon) return;
+
+  const states = {
+    ok:     { emoji: '🟢', label: 'Sincronizado',   color: 'var(--green)'  },
+    saving: { emoji: '🔄', label: 'A guardar...',   color: 'var(--accent)' },
+    error:  { emoji: '🔴', label: 'Erro de ligação', color: 'var(--red)'   },
+  };
+  const st = states[s] || states.ok;
+  icon.textContent      = st.emoji;
+  text.textContent      = st.label;
+  dot.style.background  = st.color;
+}
+
+/** Copia o Bin ID para a área de transferência */
+function copyBinId() {
+  const id = document.getElementById('bin-id-display').textContent;
+  navigator.clipboard.writeText(id).then(() => toast('Bin ID copiado! Partilhe com o seu chefe.'));
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  4. NAVEGAÇÃO POR HASH
+// ═══════════════════════════════════════════════════════
+
+const PAGES = ['dashboard', 'estoque', 'obras', 'movimentacoes', 'funcionarios'];
+
+const TITLES = {
+  dashboard:     'Dashboard',
+  estoque:       'Estoque',
+  obras:         'Obras',
+  movimentacoes: 'Movimentações',
+  funcionarios:  'Funcionários',
+};
+
+const PAGE_ACTIONS = {
+  estoque:       `<button class="btn btn-primary" onclick="openNewItem()">＋ Novo Item</button>`,
+  obras:         `<button class="btn btn-primary" onclick="openNewObra()">＋ Nova Obra</button>`,
+  funcionarios:  `<button class="btn btn-primary" onclick="openNewFunc()">＋ Novo Funcionário</button>`,
+  movimentacoes: `<button class="btn btn-ghost"   onclick="openNewSaidaGeral()">🚚 Nova Saída</button>`,
+};
+
+/** Retorna a página atual pelo hash da URL */
+function getCurrentPage() {
+  const hash = location.hash.replace('#', '').toLowerCase();
+  return PAGES.includes(hash) ? hash : 'dashboard';
+}
+
+/** Aplica a página (troca visual e carrega dados) */
+function applyPage(page) {
+  // Ativa a página correta
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const pageEl = document.getElementById('page-' + page);
+  if (pageEl) pageEl.classList.add('active');
+
+  const navEl = document.querySelector(`.nav-item[href="#${page}"]`);
+  if (navEl) navEl.classList.add('active');
+
+  // Atualiza título e botões da topbar
+  document.getElementById('topTitle').textContent = TITLES[page] || page;
+
+  const acts = document.getElementById('topActions');
+  acts.innerHTML = `<div class="sync-status"><span id="sync-icon">🟢</span><span id="sync-text">Online</span></div>`;
+  if (PAGE_ACTIONS[page]) acts.innerHTML = PAGE_ACTIONS[page] + acts.innerHTML;
+
+  renderPage(page);
+  syncLoad(); // recarrega dados ao mudar de página
+}
+
+window.addEventListener('hashchange', () => applyPage(getCurrentPage()));
+
+/** Chama a função de render da página ativa */
+function renderPage(p) {
+  if (!DB) return;
+  const renders = {
+    dashboard:     renderDashboard,
+    estoque:       renderEstoque,
+    obras:         renderObras,
+    movimentacoes: renderMovs,
+    funcionarios:  renderFuncs,
+  };
+  if (renders[p]) renders[p]();
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  5. DASHBOARD
+// ═══════════════════════════════════════════════════════
+
+function renderDashboard() {
+  const { estoque: e, obras: o, movs: m } = DB;
+
+  // Cards de resumo
+  document.getElementById('d-itens').textContent  = e.length;
+  document.getElementById('d-obras').textContent  = o.filter(x => x.status === 'Ativa').length;
+  document.getElementById('d-movs').textContent   = m.length;
+
+  const low = e.filter(i => i.minimo > 0 && (i.total - i.reservada) <= i.minimo);
+  document.getElementById('d-alerts').textContent = low.length;
+
+  // Últimas movimentações
+  const actEl = document.getElementById('dash-activity');
+  if (!m.length) {
+    actEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted)">Sem movimentações ainda</div>';
+  } else {
+    actEl.innerHTML = [...m].reverse().slice(0, 8).map(v => `
+      <div class="activity-item">
+        <div class="activity-dot" style="background:${v.tipo === 'Saída' ? 'var(--red)' : 'var(--blue)'}"></div>
+        <div>
+          <div class="activity-text">
+            <strong>${v.tipo}</strong> · ${v.item} · <strong>${v.qtd}</strong> ${v.unidade || ''}
+            ${v.obra ? ' → ' + v.obra : ''}
+          </div>
+          <div class="activity-date">${v.func ? v.func + ' · ' : ''}${fmtDate(v.data)}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  // Alertas de saldo baixo
+  const alertEl = document.getElementById('dash-alerts');
+  if (!low.length) {
+    alertEl.innerHTML = '<div style="color:var(--green);font-size:13px">✅ Todos os itens com saldo adequado</div>';
+  } else {
+    alertEl.innerHTML = low.map(i => `
+      <div class="alert-item">
+        <div style="font-size:20px">⚠️</div>
+        <div class="alert-text">
+          <strong>${i.nome}</strong><br>
+          <span style="color:var(--muted);font-size:11px">
+            Saldo: ${i.total - i.reservada} ${i.unidade || ''} | Mínimo: ${i.minimo}
+          </span>
+        </div>
+        <div class="alert-qty">${i.total - i.reservada}</div>
+      </div>`).join('');
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  6. ESTOQUE
+// ═══════════════════════════════════════════════════════
+
+function renderEstoque() {
+  const query = (document.getElementById('search-estoque').value || '').toLowerCase();
+  const list  = DB.estoque.filter(i =>
+    !query || i.nome.toLowerCase().includes(query) || i.categoria.toLowerCase().includes(query)
+  );
+
+  const tbody = document.getElementById('tbody-estoque');
+  if (!list.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="9">Nenhum item encontrado</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = list.map((item, idx) => {
+    const saldo = item.total - item.reservada;
+    const pct   = item.total > 0 ? Math.max(0, Math.min(100, saldo / item.total * 100)) : 0;
+    const cor   = pct > 50 ? 'var(--green)' : pct > 20 ? 'var(--accent)' : 'var(--red)';
+
+    const badge = saldo <= 0
+      ? '<span class="badge badge-red">⛔ Esgotado</span>'
+      : (item.minimo > 0 && saldo <= item.minimo)
+        ? '<span class="badge badge-yellow">⚠️ Baixo</span>'
+        : '<span class="badge badge-green">✅ OK</span>';
+
+    // Localização
+    const loc = item.localizacao || {};
+    const locStr = (loc.bloco && loc.secao && loc.nivel)
+      ? `<span class="loc-badge">📍 ${loc.bloco}<span>-</span>${loc.secao}<span>-</span>${loc.nivel}</span>`
+      : `<span style="color:var(--muted);font-size:12px">—</span>`;
+
+    return `
+      <tr>
+        <td style="color:var(--muted)">${idx + 1}</td>
+        <td><strong>${item.nome}</strong></td>
+        <td><span class="badge badge-blue">${item.categoria}</span></td>
+        <td>${locStr}</td>
+        <td>${item.total} <small style="color:var(--muted)">${item.unidade || ''}</small></td>
+        <td style="color:${item.reservada > 0 ? 'var(--accent)' : 'var(--muted)'}">
+          ${item.reservada} <small>${item.unidade || ''}</small>
+        </td>
+        <td><strong style="color:${cor}">${saldo}</strong> <small style="color:var(--muted)">${item.unidade || ''}</small></td>
+        <td>
+          <div class="saldo-bar">
+            <div class="saldo-bar-track">
+              <div class="saldo-bar-fill" style="width:${pct}%;background:${cor}"></div>
+            </div>
+            <div class="saldo-bar-text">${badge}</div>
+          </div>
+        </td>
+        <td>
+          <div class="actions-cell">
+            <button class="btn btn-sm btn-ghost"    onclick="openReserva('${item.id}')">📋 Reservar</button>
+            <button class="btn btn-sm btn-success"  onclick="openSaida('${item.id}')">🚚 Saída</button>
+            <button class="btn-icon" style="font-size:13px" onclick="openEditItem('${item.id}')">✏️</button>
+            <button class="btn-icon" style="font-size:13px" onclick="deleteItem('${item.id}')">🗑️</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function openNewItem() {
+  ['item-id', 'item-nome', 'item-cat', 'item-qtd', 'item-minimo'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('item-unidade').value   = '';
+  document.getElementById('item-loc-bloco').value = '';
+  document.getElementById('item-loc-secao').value = '';
+  document.getElementById('item-loc-nivel').value = '';
+  document.getElementById('modal-item-title').textContent = 'Novo Item';
+  openModal('modal-item');
+}
+
+function openEditItem(id) {
+  const item = DB.estoque.find(x => x.id === id);
+  if (!item) return;
+
+  document.getElementById('item-id').value      = id;
+  document.getElementById('item-nome').value    = item.nome;
+  document.getElementById('item-cat').value     = item.categoria;
+  document.getElementById('item-qtd').value     = item.total;
+  document.getElementById('item-unidade').value = item.unidade || '';
+  document.getElementById('item-minimo').value  = item.minimo || '';
+
+  // Localização
+  const loc = item.localizacao || {};
+  document.getElementById('item-loc-bloco').value = loc.bloco || '';
+  document.getElementById('item-loc-secao').value = loc.secao || '';
+  document.getElementById('item-loc-nivel').value = loc.nivel || '';
+
+  document.getElementById('modal-item-title').textContent = 'Editar Item';
+  openModal('modal-item');
+}
+
+async function saveItem() {
+  const id      = document.getElementById('item-id').value;
+  const nome    = document.getElementById('item-nome').value.trim();
+  const cat     = document.getElementById('item-cat').value.trim();
+  const total   = parseInt(document.getElementById('item-qtd').value) || 0;
+  const unidade = document.getElementById('item-unidade').value;
+  const minimo  = parseInt(document.getElementById('item-minimo').value) || 0;
+
+  const localizacao = {
+    bloco: document.getElementById('item-loc-bloco').value,
+    secao: document.getElementById('item-loc-secao').value,
+    nivel: document.getElementById('item-loc-nivel').value,
+  };
+
+  if (!nome || !cat || total < 0) { toast('Preencha todos os campos', 'error'); return; }
+
+  if (id) {
+    DB.estoque = DB.estoque.map(x => x.id === id ? { ...x, nome, categoria: cat, total, unidade, minimo, localizacao } : x);
+    toast('Item atualizado!');
+  } else {
+    DB.estoque.push({ id: genId(), nome, categoria: cat, total, reservada: 0, unidade, minimo, localizacao });
+    toast('Item adicionado!');
+  }
+
+  closeModal('modal-item');
+  renderEstoque();
+  renderDashboard();
+  await syncSave();
+}
+
+async function deleteItem(id) {
+  if (!confirm('Eliminar este item?')) return;
+  DB.estoque = DB.estoque.filter(x => x.id !== id);
+  renderEstoque();
+  renderDashboard();
+  await syncSave();
+  toast('Item removido');
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  7. RESERVAS
+// ═══════════════════════════════════════════════════════
+
+function openReserva(id) {
+  const item = DB.estoque.find(x => x.id === id);
+  if (!item) return;
+
+  document.getElementById('reserva-item-id').value  = id;
+  document.getElementById('reserva-item-nome').value = item.nome;
+  document.getElementById('reserva-saldo').value     = (item.total - item.reservada) + ' ' + (item.unidade || '');
+  document.getElementById('reserva-qtd').value       = '';
+
+  fillSelect('reserva-obra', DB.obras.filter(o => o.status === 'Ativa'), 'local');
+  fillSelect('reserva-func', DB.funcs, 'nome');
+  openModal('modal-reserva');
+}
+
+async function confirmarReserva() {
+  const id   = document.getElementById('reserva-item-id').value;
+  const qtd  = parseInt(document.getElementById('reserva-qtd').value) || 0;
+  const obra = document.getElementById('reserva-obra').value;
+  const func = document.getElementById('reserva-func').value;
+
+  if (qtd <= 0 || !obra || !func) { toast('Preencha todos os campos', 'error'); return; }
+
+  const item = DB.estoque.find(x => x.id === id);
+  if (qtd > (item.total - item.reservada)) { toast('Quantidade maior que o saldo!', 'error'); return; }
+
+  item.reservada += qtd;
+  logMov({ item: item.nome, qtd, tipo: 'Reserva', obra, func, unidade: item.unidade, localizacao: item.localizacao });
+
+  closeModal('modal-reserva');
+  renderEstoque();
+  renderDashboard();
+  toast(`✅ Reserva de ${qtd} ${item.unidade || ''} registada!`);
+  await syncSave();
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  8. SAÍDAS
+// ═══════════════════════════════════════════════════════
+
+function openSaida(id) {
+  const item = DB.estoque.find(x => x.id === id);
+  if (!item) return;
+
+  document.getElementById('saida-item-id').value   = id;
+  document.getElementById('saida-item-nome').value = item.nome;
+  document.getElementById('saida-total').value     = item.total + ' ' + (item.unidade || '');
+  document.getElementById('saida-qtd').value       = '';
+
+  fillSelect('saida-obra', DB.obras.filter(o => o.status === 'Ativa'), 'local');
+  fillSelect('saida-func', DB.funcs, 'nome');
+  openModal('modal-saida');
+}
+
+function openNewSaidaGeral() {
+  const disponiveis = DB.estoque.filter(i => (i.total - i.reservada) > 0);
+  if (!disponiveis.length) { toast('Não há itens com saldo disponível', 'error'); return; }
+  openSaida(disponiveis[0].id);
+}
+
+async function confirmarSaida() {
+  const id   = document.getElementById('saida-item-id').value;
+  const qtd  = parseInt(document.getElementById('saida-qtd').value) || 0;
+  const obra = document.getElementById('saida-obra').value;
+  const func = document.getElementById('saida-func').value;
+
+  if (qtd <= 0 || !obra || !func) { toast('Preencha todos os campos', 'error'); return; }
+
+  const item = DB.estoque.find(x => x.id === id);
+  if (qtd > item.total) { toast('Quantidade maior que o total físico!', 'error'); return; }
+
+  item.total    -= qtd;
+  item.reservada = Math.max(0, item.reservada - qtd);
+  logMov({ item: item.nome, qtd, tipo: 'Saída', obra, func, unidade: item.unidade, localizacao: item.localizacao });
+
+  closeModal('modal-saida');
+  renderEstoque();
+  renderDashboard();
+  toast(`🚚 Saída de ${qtd} ${item.unidade || ''} confirmada!`);
+  await syncSave();
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  9. OBRAS
+// ═══════════════════════════════════════════════════════
+
+function renderObras() {
+  const tbody = document.getElementById('tbody-obras');
+  if (!DB.obras.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Nenhuma obra cadastrada</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = DB.obras.map((o, i) => {
+    const badge = o.status === 'Ativa' ? 'badge-green' : o.status === 'Pausada' ? 'badge-yellow' : 'badge-red';
+    return `
+      <tr>
+        <td style="color:var(--muted)">${i + 1}</td>
+        <td><strong>${o.local}</strong></td>
+        <td>${o.responsavel}</td>
+        <td><span class="badge ${badge}">${o.status}</span></td>
+        <td>
+          <div class="actions-cell">
+            <button class="btn-icon" style="font-size:13px" onclick="openEditObra('${o.id}')">✏️</button>
+            <button class="btn-icon" style="font-size:13px" onclick="deleteObra('${o.id}')">🗑️</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function openNewObra() {
+  ['obra-id', 'obra-local', 'obra-resp'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('obra-status').value = 'Ativa';
+  document.getElementById('modal-obra-title').textContent = 'Nova Obra';
+  openModal('modal-obra');
+}
+
+function openEditObra(id) {
+  const obra = DB.obras.find(x => x.id === id);
+  if (!obra) return;
+
+  document.getElementById('obra-id').value     = id;
+  document.getElementById('obra-local').value  = obra.local;
+  document.getElementById('obra-resp').value   = obra.responsavel;
+  document.getElementById('obra-status').value = obra.status;
+
+  document.getElementById('modal-obra-title').textContent = 'Editar Obra';
+  openModal('modal-obra');
+}
+
+async function saveObra() {
+  const id     = document.getElementById('obra-id').value;
+  const local  = document.getElementById('obra-local').value.trim();
+  const resp   = document.getElementById('obra-resp').value.trim();
+  const status = document.getElementById('obra-status').value;
+
+  if (!local || !resp) { toast('Preencha todos os campos', 'error'); return; }
+
+  if (id) {
+    DB.obras = DB.obras.map(x => x.id === id ? { ...x, local, responsavel: resp, status } : x);
+    toast('Obra atualizada!');
+  } else {
+    DB.obras.push({ id: genId(), local, responsavel: resp, status });
+    toast('Obra cadastrada!');
+  }
+
+  closeModal('modal-obra');
+  renderObras();
+  await syncSave();
+}
+
+async function deleteObra(id) {
+  if (!confirm('Eliminar esta obra?')) return;
+  DB.obras = DB.obras.filter(x => x.id !== id);
+  renderObras();
+  await syncSave();
+  toast('Obra removida');
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  10. MOVIMENTAÇÕES
+// ═══════════════════════════════════════════════════════
+
+/** Registra uma movimentação no histórico */
+function logMov(m) {
+  DB.movs.push({
+    id:          genId(),
+    data:        new Date().toISOString(),
+    item:        m.item,
+    qtd:         m.qtd,
+    tipo:        m.tipo,
+    obra:        m.obra,
+    func:        m.func,
+    unidade:     m.unidade     || '',
+    localizacao: m.localizacao || null,
+  });
+}
+
+function renderMovs() {
+  const query = (document.getElementById('search-movs').value || '').toLowerCase();
+  const list  = [...DB.movs].reverse().filter(m =>
+    !query || m.item.toLowerCase().includes(query) || (m.obra || '').toLowerCase().includes(query)
+  );
+
+  const tbody = document.getElementById('tbody-movs');
+  if (!list.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="8">Nenhuma movimentação registada</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = list.map(m => {
+    const loc = m.localizacao;
+    const locStr = (loc && loc.bloco && loc.secao && loc.nivel)
+      ? `<span class="loc-badge">📍 ${loc.bloco}-${loc.secao}-${loc.nivel}</span>`
+      : `<span style="color:var(--muted);font-size:12px">—</span>`;
+
+    return `
+      <tr>
+        <td>${fmtDate(m.data)}</td>
+        <td><strong>${m.item}</strong></td>
+        <td>${m.qtd}</td>
+        <td><small style="color:var(--muted)">${m.unidade || '—'}</small></td>
+        <td>${locStr}</td>
+        <td><span class="badge ${m.tipo === 'Saída' ? 'badge-red' : 'badge-blue'}">${m.tipo}</span></td>
+        <td>${m.obra || '—'}</td>
+        <td>${m.func || '—'}</td>
+      </tr>`;
+  }).join('');
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  11. FUNCIONÁRIOS
+// ═══════════════════════════════════════════════════════
+
+function renderFuncs() {
+  const tbody = document.getElementById('tbody-funcs');
+  if (!DB.funcs.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Nenhum funcionário cadastrado</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = DB.funcs.map((f, i) => `
+    <tr>
+      <td style="color:var(--muted)">${i + 1}</td>
+      <td><strong>${f.nome}</strong></td>
+      <td>${f.cargo || '—'}</td>
+      <td>
+        <div class="actions-cell">
+          <button class="btn-icon" style="font-size:13px" onclick="openEditFunc('${f.id}')">✏️</button>
+          <button class="btn-icon" style="font-size:13px" onclick="deleteFunc('${f.id}')">🗑️</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function openNewFunc() {
+  ['func-id', 'func-nome', 'func-cargo'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('modal-func-title').textContent = 'Novo Funcionário';
+  openModal('modal-func');
+}
+
+function openEditFunc(id) {
+  const func = DB.funcs.find(x => x.id === id);
+  if (!func) return;
+
+  document.getElementById('func-id').value    = id;
+  document.getElementById('func-nome').value  = func.nome;
+  document.getElementById('func-cargo').value = func.cargo || '';
+
+  document.getElementById('modal-func-title').textContent = 'Editar Funcionário';
+  openModal('modal-func');
+}
+
+async function saveFunc() {
+  const id    = document.getElementById('func-id').value;
+  const nome  = document.getElementById('func-nome').value.trim();
+  const cargo = document.getElementById('func-cargo').value.trim();
+
+  if (!nome) { toast('Informe o nome', 'error'); return; }
+
+  if (id) {
+    DB.funcs = DB.funcs.map(x => x.id === id ? { ...x, nome, cargo } : x);
+    toast('Funcionário atualizado!');
+  } else {
+    DB.funcs.push({ id: genId(), nome, cargo });
+    toast('Funcionário cadastrado!');
+  }
+
+  closeModal('modal-func');
+  renderFuncs();
+  await syncSave();
+}
+
+async function deleteFunc(id) {
+  if (!confirm('Eliminar este funcionário?')) return;
+  DB.funcs = DB.funcs.filter(x => x.id !== id);
+  renderFuncs();
+  await syncSave();
+  toast('Funcionário removido');
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  12. UTILITÁRIOS
+// ═══════════════════════════════════════════════════════
+
+/** Gera ID único */
+const genId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+
+/** Abre um modal */
+const openModal  = id => document.getElementById(id).classList.add('open');
+
+/** Fecha um modal */
+const closeModal = id => document.getElementById(id).classList.remove('open');
+
+/** Fecha modal ao clicar fora dele */
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => {
+    if (e.target === el) el.classList.remove('open');
+  });
+});
+
+/** Preenche um <select> com uma lista de objetos */
+function fillSelect(selectId, items, key) {
+  document.getElementById(selectId).innerHTML = items
+    .map(i => `<option value="${i[key]}">${i[key]}</option>`)
+    .join('');
+}
+
+/** Formata data ISO para pt-BR */
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('pt-BR') + ' ' +
+         d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
+/** Exibe uma notificação toast */
+function toast(msg, type = 'success') {
+  const wrap  = document.getElementById('toast-wrap');
+  const el    = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span> ${msg}`;
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+</script>
+</body>
+</html>
